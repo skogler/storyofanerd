@@ -143,7 +143,6 @@ void EngineCore::render() {
 	//Render mPlayer
     SDL_Rect dst(mPlayer->getBoundingBox());
     dst.x -= mViewport.x;
-    dst.y -= (mViewport.y - dst.h);
 	SDL_RenderCopy(mRenderer, mPlayerImage, NULL, &dst);
 	SDL_RenderPresent(mRenderer);
 }
