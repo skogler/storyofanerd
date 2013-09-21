@@ -6,3 +6,4 @@ cmake_install.cmake
 storyofanerd
 *.cproject
 *.project
+*~*
