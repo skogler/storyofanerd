@@ -1,6 +1,7 @@
 
 #include "EngineCore.hpp"
 
+#define FPS 50
 
 EngineCore::EngineCore() :
 		mWindow(nullptr), mRenderer(nullptr) {
@@ -39,14 +40,18 @@ EngineCore::~EngineCore() {
 void EngineCore::executeLoop() {
 	SDL_Event sdl_event;
 	Input input;
+
+	//FPS variables
 	int sdl_last_tick = 0;
+	int sdl_fps_intervall = 1000 / FPS;
+
 	while (!mainLoopQuit) {
 		render();
 		eventHandling(input);
 
 		//FPS code
-		if(sdl_last_tick + 1 > SDL_GetTicks()){
-			SDL_Delay((sdl_last_tick + 1) - SDL_GetTicks() );
+		if(sdl_last_tick + sdl_fps_intervall > SDL_GetTicks()){
+			SDL_Delay((sdl_last_tick + sdl_fps_intervall) - SDL_GetTicks() );
 		}
 		sdl_last_tick = SDL_GetTicks();
 
