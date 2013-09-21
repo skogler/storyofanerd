@@ -25,7 +25,7 @@ public:
 
     void executeLoop();
     void render();
-    void eventHandling(Input *input);
+    void eventHandling(Input& input);
 
 
 private:
