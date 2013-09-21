@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
- * File:          filewrapper.h
+ * File:          xmlloader.h
  * Created:       2013-09-21
- * Last modified: 2013-09-21 11:13:50 AM CEST
+ * Last modified: 2013-09-21 02:18:42 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -31,43 +31,88 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *-----------------------------------------------------------------------*/
 
-#ifndef FILEWRAPPER_H
-#define FILEWRAPPER_H
+#ifndef XMLLOADER_H
+#define XMLLOADER_H
 
 #include <string>
+#include <vector>
 
-#include "errorcodes.h"
 #include "common.h"
+#include "errorcodes.h"
 
-using std::string;
+using namespace std;
 
-class FileWrapper
+typedef struct TileMap TileMap;
+typedef struct ImageSource ImageSource;
+typedef struct TileSet TileSet;
+typedef struct TerrainType TerrainType;
+typedef struct Tile Tile;
+typedef struct Layer Layer;
+
+struct TileMap
+{
+    uint        width;
+    uint        height;
+    uint        tilewith;
+    uint        tileheight;
+};
+
+struct ImageSource
+{
+    string      source_image;
+    uint        width;
+    uint        height;
+};
+
+struct TileSet
+{
+    string      tileset;
+    uint        tilewidth;
+    uint        tileheight;
+    uint        spacing;
+    uint        margin;
+
+    vector<TerrainType> terraintypes;
+    vector<Tile> tiles;
+
+    ImageSource image;
+};
+
+struct TerrainType
+{
+    string      name;
+    uint        tile;
+    map<string, string>     properties;
+};
+
+struct Tile
+{
+    uint        id;
+    TerrainType* terrain_1;
+    TerrainType* terrain_2;
+    TerrainType* terrain_3;
+    TerrainType* terrain_4;
+};
+
+struct Layer
+{
+    string      name;
+    uint        width;
+    uint        height;
+    string      encoding;
+    string      compression;
+};
+
+class LoadedMap
 {
     public:
-        explicit FileWrapper(const string &filename, const string &mode);
-        ~FileWrapper();
-
-        ErrorCode openFile();
-
-        inline FILE* getFileHandle()
-        {
-            return m_filehandle;
-        }
-
-        inline void closeFile()
-        {
-            if(m_filehandle != NULL)
-            {
-                fclose(m_filehandle);
-                m_filehandle = NULL;
-            }
-        }
+        explicit LoadedMap(const QString &filename);
+        ~LoadedMap();
 
     private:
-        string          m_filename;
-        string          m_mode;
-        FILE*           m_filehandle;
-
+        TileMap         m_map;
+        vector<TileSet> m_tilesets;
+        vector<Layer>   m_layers;
 };
 
 #endif

@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          filewrapper.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-21 09:24:55 AM CEST
+ * Last modified: 2013-09-21 11:13:47 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -44,7 +44,8 @@ FileWrapper::FileWrapper(const string &filename, const string &mode) :
 
 FileWrapper::~FileWrapper()
 {
-    destroy();
+    LogMem("Calling FileWrapper Destructor");
+    closeFile();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -61,15 +62,4 @@ ErrorCode FileWrapper::openFile()
 
 ///////////////////////////////////////////////////////////////////////////
 
-void FileWrapper::destroy()
-{
-    if(m_filehandle != NULL)
-    {
-        fclose(m_filehandle);
-        return;
-    }
-    LogWarning("File already closed...");
-}
-
-///////////////////////////////////////////////////////////////////////////
 
