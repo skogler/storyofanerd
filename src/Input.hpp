@@ -2,6 +2,8 @@
 #define INPUT_HPP
 
 #include <map>
+#include <vector>
+#include <type_traits>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
@@ -21,8 +23,7 @@ public:
     Input ();
     virtual ~Input ();
 
-    /// Call this until InputAction::NONE is returned
-    inline InputAction pollAction();
+    inline const std::vector<InputAction>& getActions();
 
 private:
     Input (const Input& other);
@@ -30,24 +31,46 @@ private:
 
 protected:
     /* data */
-    std::map<SDL_Keycode, InputAction> mActionMapping;
+    SDL_Event mPolledEvent;
+    std::vector<InputAction> mActions;
+    std::map<SDL_Keycode, InputAction> mActionMappings;
+    std::map<InputAction, bool> mActionStates;
 };
 
-InputAction Input::pollAction()
+
+const std::vector<InputAction>& Input::getActions()
 {
-    SDL_Event polledEvent;
-    if (SDL_PollEvent(&polledEvent)) {
-        if (polledEvent.type == SDL_QUIT) {
-            return InputAction::EXIT;
+    mActions.clear();
+    while (SDL_PollEvent(&mPolledEvent)) {
+        if (mPolledEvent.type == SDL_QUIT) {
+            mActions.push_back(InputAction::EXIT);
+            return mActions;
         }
-        if (polledEvent.type == SDL_KEYDOWN) {
-            const auto& actionMappingIterator = mActionMapping.find(polledEvent.key.keysym.sym);
-            if (actionMappingIterator != mActionMapping.end()) {
-                return actionMappingIterator->second;
+        if (mPolledEvent.type == SDL_KEYDOWN || mPolledEvent.type == SDL_KEYUP) {
+            const auto& actionMappingIterator = mActionMappings.find(mPolledEvent.key.keysym.sym);
+            if (actionMappingIterator != mActionMappings.end()) {
+                const auto& actionStateIterator = mActionStates.find(actionMappingIterator->second);
+                if (actionStateIterator != mActionStates.end()) {
+                    if (mPolledEvent.type == SDL_KEYUP) {
+                        actionStateIterator->second = false;
+                    } else {
+                        actionStateIterator->second = true;
+                    }
+                } else {
+                    // If not state cached just add the action
+                    if (mPolledEvent.type == SDL_KEYDOWN) {
+                        mActions.push_back(actionMappingIterator->second);
+                    }
+                }
             }
         }
     }
-    return InputAction::NONE;
+    for (const auto& actionState : mActionStates) {
+        if (actionState.second) {
+            mActions.push_back(actionState.first);
+        }
+    }
+    return mActions;
 }
 
 #endif /* end of include guard: INPUT_HPP */

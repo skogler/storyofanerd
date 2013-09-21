@@ -38,7 +38,7 @@ EngineCore::~EngineCore() {
 
 void EngineCore::executeLoop() {
 	SDL_Event sdl_event;
-	Input *input;
+	Input input;
 	int sdl_last_tick = 0;
 	while (!mainLoopQuit) {
 		render();
@@ -60,10 +60,12 @@ void EngineCore::render() {
 
 ///////////////////////////////////////////////////////////////////////////
 
-void EngineCore::eventHandling(Input *input) {
-	InputAction input_action = input->pollAction();
-	if(input_action == InputAction::EXIT) {
-		mainLoopQuit = true;
-	}
+void EngineCore::eventHandling(Input& input) {
+    auto& actionList = input.getActions();
+    for (auto& action : actionList) {
+        if (action == InputAction::EXIT) {
+            mainLoopQuit = true;
+        }
+    }
 }
 
