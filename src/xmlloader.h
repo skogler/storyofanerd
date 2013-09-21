@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.h
  * Created:       2013-09-21
- * Last modified: 2013-09-21 06:27:00 PM CEST
+ * Last modified: 2013-09-21 08:32:34 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -52,6 +52,8 @@ typedef struct TileSet TileSet;
 typedef struct TerrainType TerrainType;
 typedef struct Tile Tile;
 typedef struct Layer Layer;
+typedef struct ObjectGroup ObjectGroup;
+typedef struct Object Object;
 
 struct TileMap
 {
@@ -108,6 +110,25 @@ struct Layer
     string      data;
 };
 
+struct ObjectGroup
+{
+    string      draworder;
+    string      name;
+    uint        width;
+    uint        height;
+
+    vector<Object> objects;
+};
+
+struct Object
+{
+    string      name;
+    uint        x;
+    uint        y;
+    uint        width;
+    uint        height;
+};
+
 class LoadedMap
 {
     public:
@@ -125,12 +146,15 @@ class LoadedMap
         void loadTiles(XMLElement *element, TileSet *target);
         void mapTilesToTerrainPointers(string parsed, TileSet *tset, Tile *target);
         void loadLayer(XMLElement *element);
+        void loadObjectGroup(XMLElement *element);
+        void loadObjects(XMLElement *element, ObjectGroup *target);
 
         string          m_filename;
 
         TileMap         m_map;
         vector<TileSet> m_tilesets;
         vector<Layer>   m_layers;
+        vector<ObjectGroup> m_objectgroups;
 
         XMLDocument     m_doc;
 
@@ -172,6 +196,19 @@ class LoadedMap
         static const string XML_LAYER_DATA;
         static const string XML_LAYER_DATA_ENCODING;
         static const string XML_LAYER_DATA_COMPRESSION;
+
+        static const string XML_OBJECTGROUP;
+        static const string XML_OBJECTGROUP_DRAWORDER;
+        static const string XML_OBJECTGROUP_NAME;
+        static const string XML_OBJECTGROUP_WIDTH;
+        static const string XML_OBJECTGROUP_HEIGHT;
+
+        static const string XML_OBJECT;
+        static const string XML_OBJECT_NAME;
+        static const string XML_OBJECT_X;
+        static const string XML_OBJECT_Y;
+        static const string XML_OBJECT_WIDTH;
+        static const string XML_OBJECT_HEIGHT;
 };
 
 #endif

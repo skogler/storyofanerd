@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-21 08:09:17 PM CEST
+ * Last modified: 2013-09-21 09:04:14 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -75,6 +75,19 @@ const string LoadedMap::XML_LAYER_DATA      = "data";
 const string LoadedMap::XML_LAYER_DATA_ENCODING     = "encoding";
 const string LoadedMap::XML_LAYER_DATA_COMPRESSION  = "compression";
 
+const string LoadedMap::XML_OBJECTGROUP             = "objectgroup";
+const string LoadedMap::XML_OBJECTGROUP_DRAWORDER   = "draworder";
+const string LoadedMap::XML_OBJECTGROUP_NAME        = "name";
+const string LoadedMap::XML_OBJECTGROUP_WIDTH       = "width";
+const string LoadedMap::XML_OBJECTGROUP_HEIGHT      = "height";
+
+const string LoadedMap::XML_OBJECT                  = "object";
+const string LoadedMap::XML_OBJECT_NAME             = "name";
+const string LoadedMap::XML_OBJECT_X                = "x";
+const string LoadedMap::XML_OBJECT_Y                = "y";
+const string LoadedMap::XML_OBJECT_WIDTH            = "width";
+const string LoadedMap::XML_OBJECT_HEIGHT           = "height";
+
 ///////////////////////////////////////////////////////////////////////////
 
 LoadedMap::LoadedMap(const string &filename) :
@@ -110,6 +123,10 @@ void LoadedMap::loadFile()
         else if(child->Name() == XML_LAYER)
         {
             loadLayer(child);
+        }
+        else if(child->Name() == XML_OBJECTGROUP)
+        {
+            loadObjectGroup(child);
         }
         child = child->NextSiblingElement();
     }
@@ -279,7 +296,7 @@ void LoadedMap::mapTilesToTerrainPointers(string parsed, TileSet *tset, Tile *ta
 
 ///////////////////////////////////////////////////////////////////////////
 
-void  LoadedMap::loadLayer(XMLElement *element)
+void LoadedMap::loadLayer(XMLElement *element)
 {
     LogDebug2("LoadedMap::loadLayer");
     Layer parsed_layer;
@@ -303,4 +320,54 @@ void  LoadedMap::loadLayer(XMLElement *element)
     LogDebug2("LoadedMap::loadLayer: Loaded layer: " << parsed_layer.name);
     m_layers.push_back(parsed_layer);
 }
+
+///////////////////////////////////////////////////////////////////////////
+
+void LoadedMap::loadObjectGroup(XMLElement *element)
+{
+    ObjectGroup parsed_group;
+
+    parsed_group.draworder = element->Attribute(XML_OBJECTGROUP_DRAWORDER.c_str());
+    parsed_group.name = element->Attribute(XML_OBJECTGROUP_NAME.c_str());
+
+    stringstream width (element->Attribute(XML_OBJECTGROUP_WIDTH.c_str()));
+    stringstream height (element->Attribute(XML_OBJECTGROUP_HEIGHT.c_str()));
+
+    width >> parsed_group.width;
+    height >> parsed_group.height;
+
+    XMLElement *first_object = element->FirstChildElement(XML_OBJECT.c_str());
+    loadObjects(first_object, &parsed_group);
+
+    m_objectgroups.push_back(parsed_group);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+void LoadedMap::loadObjects(XMLElement *element, ObjectGroup *target)
+{
+    while(element != NULL)
+    {
+        Object parsed_object;
+
+        parsed_object.name = element->Attribute(XML_OBJECT_NAME.c_str());
+
+        stringstream x (element->Attribute(XML_OBJECT_X.c_str()));
+        stringstream y (element->Attribute(XML_OBJECT_Y.c_str()));
+
+        stringstream width (element->Attribute(XML_OBJECT_WIDTH.c_str()));
+        stringstream height (element->Attribute(XML_OBJECT_HEIGHT.c_str()));
+
+        x >> parsed_object.x;
+        y >> parsed_object.y;
+
+        width >> parsed_object.width;
+        width >> parsed_object.height;
+
+        target->objects.push_back(parsed_object);
+        element = element ->NextSiblingElement();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////
 
