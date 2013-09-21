@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-21 05:52:13 PM CEST
+ * Last modified: 2013-09-21 06:28:28 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -67,6 +67,14 @@ const string LoadedMap::XML_TILE            = "tile";
 const string LoadedMap::XML_TILE_ID         = "id";
 const string LoadedMap::XML_TILE_TERRAIN    = "terrain";
 
+const string LoadedMap::XML_LAYER           = "layer";
+const string LoadedMap::XML_LAYER_NAME      = "name";
+const string LoadedMap::XML_LAYER_WIDTH     = "width";
+const string LoadedMap::XML_LAYER_HEIGHT    = "height";
+const string LoadedMap::XML_LAYER_DATA      = "data";
+const string LoadedMap::XML_LAYER_DATA_ENCODING     = "encoding";
+const string LoadedMap::XML_LAYER_DATA_COMPRESSION  = "compression";
+
 ///////////////////////////////////////////////////////////////////////////
 
 LoadedMap::LoadedMap(const string &filename) :
@@ -99,8 +107,10 @@ void LoadedMap::loadFile()
         {
             loadTileset(child);
         }
-//        else if(child->name == XML_LAYER)
-//
+        else if(child->Name() == XML_LAYER)
+        {
+            loadLayer(child);
+        }
         child = child->NextSiblingElement();
     }
 }
@@ -237,5 +247,32 @@ void LoadedMap::loadTiles(XMLElement *element, TileSet *target)
 void LoadedMap::mapTilesToTerrainPointers(string parsed, TileSet *tset, Tile *target)
 {
     //TODO
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+void  LoadedMap::loadLayer(XMLElement *element)
+{
+    LogDebug2("LoadedMap::loadLayer");
+    Layer parsed_layer;
+
+    parsed_layer.name = element->Attribute(XML_LAYER_NAME.c_str());
+
+    stringstream width (element->Attribute(XML_LAYER_WIDTH.c_str()));
+    stringstream height (element->Attribute(XML_LAYER_HEIGHT.c_str()));
+
+    width >> parsed_layer.width;
+    height >> parsed_layer.height;
+
+    XMLElement *data = element->FirstChildElement(XML_LAYER_DATA.c_str());
+    if(data != NULL)
+    {
+        parsed_layer.encoding = data->Attribute(XML_LAYER_DATA_ENCODING.c_str());
+        parsed_layer.compression = data->Attribute(XML_LAYER_DATA_COMPRESSION.c_str());
+        parsed_layer.data = data->GetText();
+    }
+
+    LogDebug2("LoadedMap::loadLayer: Loaded layer: " << parsed_layer.name);
+    m_layers.push_back(parsed_layer);
 }
 

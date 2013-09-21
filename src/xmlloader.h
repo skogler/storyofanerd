@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.h
  * Created:       2013-09-21
- * Last modified: 2013-09-21 05:44:04 PM CEST
+ * Last modified: 2013-09-21 06:27:00 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -105,6 +105,7 @@ struct Layer
     uint        height;
     string      encoding;
     string      compression;
+    string      data;
 };
 
 class LoadedMap
@@ -123,6 +124,7 @@ class LoadedMap
         void loadProperties(XMLElement *element, TerrainType *target);
         void loadTiles(XMLElement *element, TileSet *target);
         void mapTilesToTerrainPointers(string parsed, TileSet *tset, Tile *target);
+        void loadLayer(XMLElement *element);
 
         string          m_filename;
 
@@ -162,6 +164,14 @@ class LoadedMap
         static const string XML_TILE;
         static const string XML_TILE_ID;
         static const string XML_TILE_TERRAIN;
+
+        static const string XML_LAYER;
+        static const string XML_LAYER_NAME;
+        static const string XML_LAYER_WIDTH;
+        static const string XML_LAYER_HEIGHT;
+        static const string XML_LAYER_DATA;
+        static const string XML_LAYER_DATA_ENCODING;
+        static const string XML_LAYER_DATA_COMPRESSION;
 };
 
 #endif
