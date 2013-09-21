@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-21 09:04:14 PM CEST
+ * Last modified: 2013-09-21 10:14:17 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -106,6 +106,7 @@ LoadedMap::~LoadedMap()
 
 void LoadedMap::loadFile()
 {
+    LogDebug("LoadedMap::loadFile start");
     m_doc.LoadFile(m_filename.c_str());
 
     XMLElement *root_map = m_doc.FirstChildElement(XML_MAP.c_str());
@@ -130,6 +131,7 @@ void LoadedMap::loadFile()
         }
         child = child->NextSiblingElement();
     }
+    LogDebug("LoadedMap::loadFile end");
 }
 
 ///////////////////////////////////////////////////////////////////////////
