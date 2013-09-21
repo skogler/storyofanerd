@@ -39,11 +39,18 @@ EngineCore::~EngineCore() {
 void EngineCore::executeLoop() {
 	SDL_Event sdl_event;
 	Input *input;
+	int sdl_last_tick = 0;
 	while (!mainLoopQuit) {
 		render();
 		eventHandling(input);
-	}
 
+		//FPS code
+		if(sdl_last_tick + 1 > SDL_GetTicks()){
+			SDL_Delay((sdl_last_tick + 1) - SDL_GetTicks() );
+		}
+		sdl_last_tick = SDL_GetTicks();
+
+	}
 }
 ///////////////////////////////////////////////////////////////////////////
 
