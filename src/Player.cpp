@@ -7,7 +7,7 @@ Player::Player()
     , mMovementState(PlayerMovementState::STANDING)
 {
 	mBoundingBox.x = 320;
-	mBoundingBox.y = 440;
+	mBoundingBox.y = 200;
 	mBoundingBox.w = 40;
 	mBoundingBox.h = 40;
 }
