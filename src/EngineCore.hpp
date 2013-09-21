@@ -10,9 +10,14 @@
 #include <sstream>
 #include <iostream>
 
+#define FPS 50
+#define TILE_W 20
+#define TILE_H 20
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
+
 struct SDL_Window;
 struct SDL_Renderer;
-
 
 class EngineCore
 {
@@ -26,6 +31,11 @@ public:
     void executeLoop();
     void render();
     void eventHandling(Input& input);
+
+    //World offset
+    int xoffset = 0;
+    int yoffset = 0;
+
 
 
 private:

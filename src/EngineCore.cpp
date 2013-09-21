@@ -1,7 +1,4 @@
-
 #include "EngineCore.hpp"
-
-#define FPS 50
 
 EngineCore::EngineCore() :
 		mWindow(nullptr), mRenderer(nullptr) {
@@ -10,7 +7,7 @@ EngineCore::EngineCore() :
 	}
 
 	mWindow = SDL_CreateWindow("Game", SDL_WINDOWPOS_CENTERED,
-			SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_SHOWN);
+	SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_SHOWN);
 	if (!mWindow) {
 		std::stringstream ss("Error opening window: ");
 		ss << SDL_GetError();
@@ -25,6 +22,8 @@ EngineCore::EngineCore() :
 		throw std::runtime_error(ss.str());
 	}
 
+	SDL_ShowCursor(SDL_DISABLE);
+
 	executeLoop();
 }
 
@@ -38,7 +37,6 @@ EngineCore::~EngineCore() {
 ///////////////////////////////////////////////////////////////////////////
 
 void EngineCore::executeLoop() {
-	SDL_Event sdl_event;
 	Input input;
 
 	//FPS variables
@@ -50,8 +48,8 @@ void EngineCore::executeLoop() {
 		eventHandling(input);
 
 		//FPS code
-		if(sdl_last_tick + sdl_fps_intervall > SDL_GetTicks()){
-			SDL_Delay((sdl_last_tick + sdl_fps_intervall) - SDL_GetTicks() );
+		if (sdl_last_tick + sdl_fps_intervall > SDL_GetTicks()) {
+			SDL_Delay((sdl_last_tick + sdl_fps_intervall) - SDL_GetTicks());
 		}
 		sdl_last_tick = SDL_GetTicks();
 
@@ -60,17 +58,48 @@ void EngineCore::executeLoop() {
 ///////////////////////////////////////////////////////////////////////////
 
 void EngineCore::render() {
+	//Clear screen
+	SDL_RenderSetScale(mRenderer, 1.f, 1.f);
+	SDL_RenderClear(mRenderer);
+
+	// tiles
+	// map  00 01 02 03  | 11 12 ......
+
+	SDL_Texture *tex = IMG_LoadTexture(mRenderer, "../image.png");
+	if (tex == nullptr)
+		std::cout << "tex load failed" << std::endl;
+
+	// test values
+	int map_w = 2000;
+	int map_h = 2000;
+
+	for (int i = 0; i < map_w; i += 40)
+		for (int j = 0; j < map_h; j += 40) {
+			SDL_Rect dst;
+			dst.x = i + xoffset;
+			dst.y = j + yoffset;
+			dst.w = 40;
+			dst.h = 40;
+			SDL_RenderCopy(mRenderer, tex, NULL, &dst);
+		}
+
+
 	SDL_RenderPresent(mRenderer);
 }
 
 ///////////////////////////////////////////////////////////////////////////
 
 void EngineCore::eventHandling(Input& input) {
-    auto& actionList = input.getActions();
-    for (auto& action : actionList) {
-        if (action == InputAction::EXIT) {
-            mainLoopQuit = true;
-        }
-    }
+	auto& actionList = input.getActions();
+	for (auto& action : actionList) {
+		if (action == InputAction::EXIT) {
+			mainLoopQuit = true;
+		}
+		if (action == InputAction::MOVE_FORWARD)
+			xoffset += 10;
+		else if (action == InputAction::MOVE_BACKWARD)
+			xoffset -= 10;
+
+	}
 }
 
