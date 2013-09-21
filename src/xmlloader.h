@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.h
  * Created:       2013-09-21
- * Last modified: 2013-09-21 09:35:32 PM CEST
+ * Last modified: 2013-09-21 10:46:26 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -117,6 +117,7 @@ struct ObjectGroup
     uint        width;
     uint        height;
 
+    map<string, string> properties;
     vector<Object> objects;
 };
 
@@ -179,11 +180,12 @@ class LoadedMap
         void loadTileset(XMLElement *element);
         void loadImageSource(XMLElement *element, TileSet *target);
         void loadTerrains(XMLElement *element, TileSet *target);
-        void loadProperties(XMLElement *element, TerrainType *target);
+        void loadTerrainProperties(XMLElement *element, TerrainType *target);
         void loadTiles(XMLElement *element, TileSet *target);
         void mapTilesToTerrainPointers(string parsed, TileSet *tset, Tile *target);
         void loadLayer(XMLElement *element);
         void loadObjectGroup(XMLElement *element);
+        void loadObjectGroupProperties(XMLElement *element, ObjectGroup *target);
         void loadObjects(XMLElement *element, ObjectGroup *target);
 
         string          m_filename;
@@ -239,6 +241,11 @@ class LoadedMap
         static const string XML_OBJECTGROUP_NAME;
         static const string XML_OBJECTGROUP_WIDTH;
         static const string XML_OBJECTGROUP_HEIGHT;
+
+        static const string XML_OBJECTGROUP_PROPS;
+        static const string XML_OBJECTGROUP_PROP;
+        static const string XML_OBJECTGROUP_PROP_NAME;
+        static const string XML_OBJECTGROUP_PROP_VALUE;
 
         static const string XML_OBJECT;
         static const string XML_OBJECT_NAME;
