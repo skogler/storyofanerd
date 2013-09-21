@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
- * File:          errorcodes.h
- * Created:       13-05-11
- * Last modified: 2013-09-21 09:21:03 AM CEST
+ * File:          filewrapper.h
+ * Created:       2013-09-21
+ * Last modified: 2013-09-21 09:14:46 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -31,37 +31,36 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *-----------------------------------------------------------------------*/
 
-#ifndef ERRORCODES_H
-#define ERRORCODES_H
+#ifndef FILEWRAPPER_H
+#define FILEWRAPPER_H
 
-enum ErrorCode : unsigned int
+#include <string>
+
+#include "errorcodes.h"
+#include "common.h"
+
+using std::string;
+
+class FileWrapper
 {
-    OK                      = 0,
-    ERROR_UNKNOWN           = 1,
-    ERROR_OUT_OF_MEMORY     = 2,
-    ERROR_FILE_NOT_FOUND    = 3,
-    ERROR_OPENING_FILE      = 4,
-    NB_ERROR_COUNTER
+    public:
+        explicit FileWrapper(const string &filename, const string &mode);
+        ~FileWrapper();
+
+        ErrorCode openFile();
+
+        inline FILE* getFileHandle()
+        {
+            return m_filehandle;
+        }
+
+    private:
+        void destroy();
+
+        string          m_filename;
+        string          m_mode;
+        FILE*           m_filehandle;
+
 };
-
-static const char *error_msgs[NB_ERROR_COUNTER] = 
-{
-    /* OK */
-    "Ok. No error found",
-
-    /* ERROR_UNKOWN */
-    "Unknown error occoured",
-
-    /* ERROR_OUT_OF_MEMORY */
-    "Out of memory",
-
-    /* ERROR_FILE_NOT_FOUND */
-    "File not found",
-
-    /* ERROR_OPENING_FILE */
-    "Unable to open file"
-};
-
-#define ERRORMSG(type) error_msgs[type]
 
 #endif

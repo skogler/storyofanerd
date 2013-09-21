@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
- * File:          errorcodes.h
- * Created:       13-05-11
- * Last modified: 2013-09-21 09:21:03 AM CEST
+ * File:          filewrapper.cpp
+ * Created:       2013-09-21
+ * Last modified: 2013-09-21 09:24:55 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -31,37 +31,45 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *-----------------------------------------------------------------------*/
 
-#ifndef ERRORCODES_H
-#define ERRORCODES_H
+#include "filewrapper.h"
 
-enum ErrorCode : unsigned int
+///////////////////////////////////////////////////////////////////////////
+
+FileWrapper::FileWrapper(const string &filename, const string &mode) :
+    m_filename(filename), m_mode(mode), m_filehandle(NULL)
 {
-    OK                      = 0,
-    ERROR_UNKNOWN           = 1,
-    ERROR_OUT_OF_MEMORY     = 2,
-    ERROR_FILE_NOT_FOUND    = 3,
-    ERROR_OPENING_FILE      = 4,
-    NB_ERROR_COUNTER
-};
+}
 
-static const char *error_msgs[NB_ERROR_COUNTER] = 
+///////////////////////////////////////////////////////////////////////////
+
+FileWrapper::~FileWrapper()
 {
-    /* OK */
-    "Ok. No error found",
+    destroy();
+}
 
-    /* ERROR_UNKOWN */
-    "Unknown error occoured",
+///////////////////////////////////////////////////////////////////////////
 
-    /* ERROR_OUT_OF_MEMORY */
-    "Out of memory",
+ErrorCode FileWrapper::openFile()
+{
+    m_filehandle = fopen(m_filename.c_str(), m_mode.c_str());
+    if(m_filehandle == NULL)
+    {
+        return ERROR_OPENING_FILE;
+    }
+    return OK;
+}
 
-    /* ERROR_FILE_NOT_FOUND */
-    "File not found",
+///////////////////////////////////////////////////////////////////////////
 
-    /* ERROR_OPENING_FILE */
-    "Unable to open file"
-};
+void FileWrapper::destroy()
+{
+    if(m_filehandle != NULL)
+    {
+        fclose(m_filehandle);
+        return;
+    }
+    LogWarning("File already closed...");
+}
 
-#define ERRORMSG(type) error_msgs[type]
+///////////////////////////////////////////////////////////////////////////
 
-#endif

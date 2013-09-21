@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:	      common.h
  * Created:       13-04-13
- * Last modified: 2013-09-20 06:37:23 PM CEST
+ * Last modified: 2013-09-21 09:22:34 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -34,11 +34,11 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include "errorcodes.h"
-
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
+
+#include "errorcodes.h"
 
 using std::cout;
 using std::endl;
@@ -51,7 +51,7 @@ typedef unsigned long ulong;
 
 #define DATETIME
 
-string getCurrentTime()
+inline string getCurrentTime()
 {
     time_t rawtime;
     struct tm *timeinfo;
