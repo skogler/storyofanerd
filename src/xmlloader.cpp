@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-21 10:19:00 PM CEST
+ * Last modified: 2013-09-21 10:50:15 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -80,6 +80,11 @@ const string LoadedMap::XML_OBJECTGROUP_DRAWORDER   = "draworder";
 const string LoadedMap::XML_OBJECTGROUP_NAME        = "name";
 const string LoadedMap::XML_OBJECTGROUP_WIDTH       = "width";
 const string LoadedMap::XML_OBJECTGROUP_HEIGHT      = "height";
+
+const string LoadedMap::XML_OBJECTGROUP_PROPS       = "properties";
+const string LoadedMap::XML_OBJECTGROUP_PROP        = "property";
+const string LoadedMap::XML_OBJECTGROUP_PROP_NAME   = "name";
+const string LoadedMap::XML_OBJECTGROUP_PROP_VALUE  = "value";
 
 const string LoadedMap::XML_OBJECT                  = "object";
 const string LoadedMap::XML_OBJECT_NAME             = "name";
@@ -218,7 +223,7 @@ void LoadedMap::loadTerrains(XMLElement *element, TileSet *target)
         XMLElement *properties = element->FirstChildElement(XML_TERRAIN_PROPS.c_str());
         if(properties != NULL)
         {
-            loadProperties(properties, &parsed_terrain);
+            loadTerrainProperties(properties, &parsed_terrain);
         }
 
         target->terraintypes.push_back(parsed_terrain);
@@ -229,7 +234,7 @@ void LoadedMap::loadTerrains(XMLElement *element, TileSet *target)
 
 ///////////////////////////////////////////////////////////////////////////
 
-void LoadedMap::loadProperties(XMLElement *element, TerrainType *target)
+void LoadedMap::loadTerrainProperties(XMLElement *element, TerrainType *target)
 {
     XMLElement *property = element->FirstChildElement(XML_TERRAIN_PROP.c_str());
     while(property != NULL)
@@ -344,6 +349,11 @@ void LoadedMap::loadObjectGroup(XMLElement *element)
     XMLElement *first_object = element->FirstChildElement(XML_OBJECT.c_str());
     loadObjects(first_object, &parsed_group);
 
+    XMLElement *properties = element->FirstChildElement(XML_OBJECTGROUP_PROPS.c_str());
+    if(properties != NULL)
+    {
+        loadObjectGroupProperties(properties, &parsed_group);
+    }
     m_objectgroups.push_back(parsed_group);
 }
 
@@ -376,3 +386,18 @@ void LoadedMap::loadObjects(XMLElement *element, ObjectGroup *target)
 
 ///////////////////////////////////////////////////////////////////////////
 
+void LoadedMap::loadObjectGroupProperties(XMLElement *element, ObjectGroup *target)
+{
+    XMLElement *property = element->FirstChildElement(XML_OBJECTGROUP_PROP.c_str());
+    while(property != NULL)
+    {
+        std::pair<string, string> parsed_property;
+        parsed_property.first = property->Attribute(XML_OBJECTGROUP_PROP_NAME.c_str());
+        parsed_property.second= property->Attribute(XML_OBJECTGROUP_PROP_VALUE.c_str());
+
+        target->properties.insert(parsed_property);
+        property = property->NextSiblingElement();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////
