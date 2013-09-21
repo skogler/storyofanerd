@@ -1,11 +1,6 @@
+
 #include "EngineCore.hpp"
 
-#include "common.h"
-
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <stdexcept>
-#include <sstream>
 
 EngineCore::EngineCore() :
 		mWindow(nullptr), mRenderer(nullptr) {
@@ -42,12 +37,11 @@ EngineCore::~EngineCore() {
 ///////////////////////////////////////////////////////////////////////////
 
 void EngineCore::executeLoop() {
-	bool quit = false;
 	SDL_Event sdl_event;
-	while (!quit) {
+	Input *input;
+	while (!mainLoopQuit) {
 		render();
-		eventHandling();
-		quit = true;
+		eventHandling(input);
 	}
 
 }
@@ -55,13 +49,14 @@ void EngineCore::executeLoop() {
 
 void EngineCore::render() {
 	SDL_RenderPresent(mRenderer);
-	SDL_Delay(2000);
-
 }
 
 ///////////////////////////////////////////////////////////////////////////
 
-void EngineCore::eventHandling() {
-
+void EngineCore::eventHandling(Input *input) {
+	InputAction input_action = input->pollAction();
+	if(input_action == InputAction::EXIT) {
+		mainLoopQuit = true;
+	}
 }
 

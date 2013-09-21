@@ -1,6 +1,15 @@
 #ifndef ENGINECORE_HPP
 #define ENGINECORE_HPP
 
+#include "Input.hpp"
+#include "common.h"
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <stdexcept>
+#include <sstream>
+#include <iostream>
+
 struct SDL_Window;
 struct SDL_Renderer;
 
@@ -16,10 +25,12 @@ public:
 
     void executeLoop();
     void render();
-    void eventHandling();
+    void eventHandling(Input *input);
 
 
 private:
+	bool mainLoopQuit = false;
+
 	EngineCore(const EngineCore& other);
 	EngineCore& operator=(const EngineCore& other);
 
