@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-21 10:14:17 PM CEST
+ * Last modified: 2013-09-21 10:19:00 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -315,7 +315,10 @@ void LoadedMap::loadLayer(XMLElement *element)
     if(data != NULL)
     {
         parsed_layer.encoding = data->Attribute(XML_LAYER_DATA_ENCODING.c_str());
-        parsed_layer.compression = data->Attribute(XML_LAYER_DATA_COMPRESSION.c_str());
+        if(parsed_layer.encoding != "csv")
+        {
+            parsed_layer.compression = data->Attribute(XML_LAYER_DATA_COMPRESSION.c_str());
+        }
         parsed_layer.data = data->GetText();
     }
 
