@@ -29,8 +29,9 @@ EngineCore::EngineCore() :
 
 	tileSet = IMG_LoadTexture(mRenderer,
 			("../res/maps/" + map->getImageName(0)).c_str());
+	if(tileSet == nullptr)
+		std::cout << "tilesetLoadfailed" << std::endl;
 	generateTilesetResources();
-
 	executeLoop();
 }
 
@@ -68,48 +69,25 @@ void EngineCore::render() {
 	SDL_RenderSetScale(mRenderer, 1.f, 1.f);
 	SDL_RenderClear(mRenderer);
 
-	// tiles
-	// map  00 01 02 03  | 11 12 ......
-	SDL_Texture *tex = IMG_LoadTexture(mRenderer,
-			("../res/maps/" + map->getImageName(0)).c_str());
-	if (tex == nullptr)
-		std::cout << "tex load failed" << std::endl;
-
 	// test values
 	int map_w = 1000;
 	int map_h = 1000;
-
+/*
 	for (int i = 0; i < map_w; i += 40)
 		for (int j = 0; j < map_h; j += 40) {
 			SDL_Rect dst;
-				dst.x = i + xoffset;
-				dst.y = j + yoffset;
-				if (tileClips != nullptr){
-					dst.w = tileClips->w;
-					dst.h = tileClips->h;
-				}
-				else
-					SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h);
+			dst.x = i + xoffset;
+			dst.y = j + yoffset;
+			if (tileClips != nullptr) {
+				dst.w = tileClips->w;
+				dst.h = tileClips->h;
+			} else
+				SDL_QueryTexture(tileSet, NULL, NULL, &dst.w, &dst.h);
 
-				SDL_RenderCopy(mRenderer, tileSet, tileClips, &dst);
+			SDL_RenderCopy(mRenderer, tileSet, tileClips, &dst);
 
 		}
-
-	/*
-
-	 int w, h;
-
-	 SDL_QueryTexture(tex, NULL, NULL, &w, &h);
-
-	 SDL_Rect dst;
-	 dst.x = 0;
-	 dst.y = 0;
-	 dst.w = w;
-	 dst.h = h;
-
-	 SDL_RenderCopy(mRenderer, tex, NULL, &dst);
-
-	 */
+*/
 	//Render player
 	SDL_Texture *tex2 = IMG_LoadTexture(mRenderer, "../player.png");
 	SDL_Rect player_box = (player->getBoundingBox());
@@ -143,7 +121,6 @@ void EngineCore::eventHandling(Input& input) {
 
 	}
 }
-
 
 void EngineCore::generateTilesetResources() {
 
