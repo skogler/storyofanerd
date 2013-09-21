@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          eventgen.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-21 10:29:53 PM CEST
+ * Last modified: 2013-09-21 11:08:49 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -33,6 +33,8 @@
 
 #include "eventgen.h"
 
+const string Eventgen::PROPERTY_GROUP_SINGLE_IDENTIFIER = "single";
+
 ///////////////////////////////////////////////////////////////////////////
 
 Eventgen::Eventgen(const vector<ObjectGroup> grouped_event_boxes) :
@@ -52,10 +54,23 @@ Eventgen::~Eventgen()
 
 vector<Event> Eventgen::checkForEvents(uint x, uint y)
 {
+    //TODO: probably better to return pointers to events?
     vector<Event> to_trigger;
     for(vector<ObjectGroup>::const_iterator git = m_grouped_event_boxes.cbegin();
         git != m_grouped_event_boxes.cend(); git++)
     {
+        /////////////////////////////////
+        //check if the group has the "single" property
+        bool single = false;
+        map<string, string>::const_iterator pip = 
+            git->properties.find("PROPERTY_GROUP_SINGLE_IDENTIFIER");
+
+        if(pip != git->properties.end() && pip->second == "true")
+        {
+            single = true;
+        }
+        /////////////////////////////////
+
         for(vector<Object>::const_iterator oit = git->objects.cbegin();
             oit != git->objects.cend(); oit++)
         {
@@ -71,6 +86,35 @@ vector<Event> Eventgen::checkForEvents(uint x, uint y)
                 Event event;
                 event.group = git->name;
                 event.name = oit->name;
+
+                /////////////////////////////////
+                if(single)
+                {
+                    bool found = false;
+                    for(vector<Event>::const_iterator sit =
+                        m_triggered_single_events.cbegin();
+                        sit != m_triggered_single_events.cend();
+                        sit++)
+                    {
+                        if(sit->group == event.group &&
+                           sit->name == event.name)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if(found)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        m_triggered_single_events.push_back(event);
+                    }
+                }
+                /////////////////////////////////
+                
                 to_trigger.push_back(event);
             }
         }

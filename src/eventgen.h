@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          eventgen.h
  * Created:       2013-09-21
- * Last modified: 2013-09-21 10:02:22 PM CEST
+ * Last modified: 2013-09-21 10:56:16 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -66,6 +66,8 @@ class Eventgen
         //  is true to avoid multiple triggering of certain events
         //  TODO -- add property parsing in xmlloader and checking here
         vector<Event>       m_triggered_single_events;
+
+        static const string PROPERTY_GROUP_SINGLE_IDENTIFIER;
 };
 
 #endif
