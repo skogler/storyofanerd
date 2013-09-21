@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.h
  * Created:       2013-09-21
- * Last modified: 2013-09-21 02:18:42 PM CEST
+ * Last modified: 2013-09-21 02:39:12 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -36,6 +36,9 @@
 
 #include <string>
 #include <vector>
+#include <map>
+
+#include <tinyxml2.h>
 
 #include "common.h"
 #include "errorcodes.h"
@@ -106,13 +109,16 @@ struct Layer
 class LoadedMap
 {
     public:
-        explicit LoadedMap(const QString &filename);
+        explicit LoadedMap(const string &filename);
         ~LoadedMap();
 
     private:
+        void loadMap();
         TileMap         m_map;
         vector<TileSet> m_tilesets;
         vector<Layer>   m_layers;
+
+        XMLDocument     m_doc;
 };
 
 #endif
