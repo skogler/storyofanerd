@@ -27,6 +27,10 @@ EngineCore::EngineCore() :
 	player = new Player();
 	map = new LoadedMap("../res/maps/testmap.tmx");
 
+	tileSet = IMG_LoadTexture(mRenderer,
+			("../res/maps/" + map->getImageName(0)).c_str());
+	generateTilesetResources();
+
 	executeLoop();
 }
 
@@ -78,11 +82,17 @@ void EngineCore::render() {
 	for (int i = 0; i < map_w; i += 40)
 		for (int j = 0; j < map_h; j += 40) {
 			SDL_Rect dst;
-			dst.x = i + xoffset;
-			dst.y = j + yoffset;
-			dst.w = 40;
-			dst.h = 40;
-			SDL_RenderCopy(mRenderer, tex, NULL, &dst);
+				dst.x = i + xoffset;
+				dst.y = j + yoffset;
+				if (tileClips != nullptr){
+					dst.w = tileClips->w;
+					dst.h = tileClips->h;
+				}
+				else
+					SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h);
+
+				SDL_RenderCopy(mRenderer, tileSet, tileClips, &dst);
+
 		}
 
 	/*
@@ -97,9 +107,9 @@ void EngineCore::render() {
 	 dst.w = w;
 	 dst.h = h;
 
-	SDL_RenderCopy(mRenderer, tex, NULL, &dst);
+	 SDL_RenderCopy(mRenderer, tex, NULL, &dst);
 
-	*/
+	 */
 	//Render player
 	SDL_Texture *tex2 = IMG_LoadTexture(mRenderer, "../player.png");
 	SDL_Rect player_box = (player->getBoundingBox());
@@ -132,5 +142,27 @@ void EngineCore::eventHandling(Input& input) {
 		}
 
 	}
+}
+
+
+void EngineCore::generateTilesetResources() {
+
+	if (tileSet == nullptr)
+		std::cout << "tileSet couldnt be populated" << std::endl;
+
+	int tile_w = 40;
+	int tile_h = 40;
+	int x = SCREEN_WIDTH / 2 - tile_w / 2;
+	int y = SCREEN_HEIGHT / 2 - tile_h / 2;
+
+	tileClips[48];
+	for (int i = 0; i < 48; ++i) {
+		tileClips[i].x = i / 2 * tile_w;
+		tileClips[i].y = i % 2 * tile_h;
+		tileClips[i].w = tile_w;
+		tileClips[i].h = tile_h;
+	}
+
+	current_clip = 0;
 }
 

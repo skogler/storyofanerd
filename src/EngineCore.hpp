@@ -42,10 +42,16 @@ private:
 	Player* player;
 	LoadedMap* map;
 
+	SDL_Texture* tileSet;
+	SDL_Rect tileClips[];
+	short current_clip = 0;
+
 	bool mainLoopQuit = false;
 
 	EngineCore(const EngineCore& other);
 	EngineCore& operator=(const EngineCore& other);
+
+	void generateTilesetResources();
 
 protected:
     std::unique_ptr<Audio> mAudio;
