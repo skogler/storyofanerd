@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-21 06:28:28 PM CEST
+ * Last modified: 2013-09-21 08:03:26 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -246,7 +246,32 @@ void LoadedMap::loadTiles(XMLElement *element, TileSet *target)
 
 void LoadedMap::mapTilesToTerrainPointers(string parsed, TileSet *tset, Tile *target)
 {
-    //TODO
+    std::stringstream ss(parsed);
+    
+    int parsed_val;
+    int cnt = 1;
+    while (ss >> parsed_val && cnt <= 4)
+    {
+        switch(cnt)
+        {
+            case 1:
+                target->terrain_1 = &tset->terraintypes[parsed_val];
+                break;
+            case 2:
+                target->terrain_2 = &tset->terraintypes[parsed_val];
+            case 3:
+                target->terrain_3 = &tset->terraintypes[parsed_val];
+            case 4:
+                target->terrain_4 = &tset->terraintypes[parsed_val];
+        }
+            
+        if (ss.peek() == ',')
+        {
+            ss.ignore();
+        }
+
+        cnt = cnt + 1;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////
