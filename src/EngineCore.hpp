@@ -12,8 +12,15 @@ public:
     SDL_Window* mWindow;
     SDL_Renderer* mRenderer;
 
+    void executeLoop();
+    void render();
+    void eventHandling();
+
+
 private:
 	EngineCore(const EngineCore& other);
 	EngineCore& operator=(const EngineCore& other);
+
+
 
 };
