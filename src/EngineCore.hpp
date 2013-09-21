@@ -43,7 +43,7 @@ private:
 	LoadedMap* map;
 
 	SDL_Texture* tileSet;
-	SDL_Rect tileClips[];
+	vector<SDL_Rect> tileClips;
 	short current_clip = 0;
 
 	bool mainLoopQuit = false;

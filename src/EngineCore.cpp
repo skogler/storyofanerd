@@ -66,28 +66,56 @@ void EngineCore::executeLoop() {
 
 void EngineCore::render() {
 	//Clear screen
-	SDL_RenderSetScale(mRenderer, 1.f, 1.f);
 	SDL_RenderClear(mRenderer);
 
-	// test values
-	int map_w = 1000;
-	int map_h = 1000;
-/*
+	vector<Tile> tile_vec = map->getTileSetVector(0);
+
+	//Parse tile data
+    string tile_data = map->getLayerData(0);
+
+    std::vector<int> tile_data_ints;
+    std::stringstream ss(tile_data);
+    int vec_index;
+    while (ss >> vec_index)
+    {
+    	tile_data_ints.push_back(vec_index);
+    	if (ss.peek() == ',')
+    		ss.ignore();
+    }
+
+    int x_coord = 0;
+    int y_coord = 0;
+    int row_count = map->getTileMap().width / map->getTileMap().tilewidth;
+    for(std::vector<int>::iterator it = tile_data_ints.begin(); it != tile_data_ints.end(); ++it) {
+    		current_clip = *it;
+    		x_coord += map->getTileMap().tilewidth;
+    	    if(x_coord >= (row_count *  map->getTileMap().tilewidth))
+    	    {
+    	    	y_coord += map->getTileMap().tileheight;
+    	    	x_coord = 0;
+
+    	    }
+
+			SDL_Rect dst;
+			dst.x = x_coord + xoffset;
+			dst.y = y_coord + yoffset;
+			dst.w = tileClips.at(current_clip).w;
+			dst.h = tileClips.at(current_clip).h;
+
+			SDL_RenderCopy(mRenderer, tileSet, &tileClips[current_clip], &dst);
+    	}
+    /*
 	for (int i = 0; i < map_w; i += 40)
 		for (int j = 0; j < map_h; j += 40) {
 			SDL_Rect dst;
 			dst.x = i + xoffset;
 			dst.y = j + yoffset;
-			if (tileClips != nullptr) {
-				dst.w = tileClips->w;
-				dst.h = tileClips->h;
-			} else
-				SDL_QueryTexture(tileSet, NULL, NULL, &dst.w, &dst.h);
+			dst.w = tileClips.at(current_clip).w;
+			dst.h = tileClips.at(current_clip).h;
+			SDL_RenderCopy(mRenderer, tileSet, &tileClips[current_clip], &dst);
 
-			SDL_RenderCopy(mRenderer, tileSet, tileClips, &dst);
+		}*/
 
-		}
-*/
 	//Render player
 	SDL_Texture *tex2 = IMG_LoadTexture(mRenderer, "../player.png");
 	SDL_Rect player_box = (player->getBoundingBox());
@@ -127,18 +155,21 @@ void EngineCore::generateTilesetResources() {
 	if (tileSet == nullptr)
 		std::cout << "tileSet couldnt be populated" << std::endl;
 
-	int tile_w = 40;
-	int tile_h = 40;
+	int tile_w = map->getTileMap().tilewidth;
+	int tile_h = map->getTileMap().tileheight;;
 	int x = SCREEN_WIDTH / 2 - tile_w / 2;
 	int y = SCREEN_HEIGHT / 2 - tile_h / 2;
 
-	tileClips[48];
 	for (int i = 0; i < 48; ++i) {
-		tileClips[i].x = i / 2 * tile_w;
-		tileClips[i].y = i % 2 * tile_h;
-		tileClips[i].w = tile_w;
-		tileClips[i].h = tile_h;
+		SDL_Rect rect;
+		rect.x = i / 2 * tile_w;
+		rect.y = i % 2 * tile_h;
+		rect.w = tile_w;
+		rect.h = tile_h;
+		tileClips.push_back(rect);
 	}
+
+
 
 	current_clip = 0;
 }

@@ -146,6 +146,15 @@ class LoadedMap
             return m_tilesets.at(tileset).image.source_image;
         }
 
+        TileMap getTileMap() const
+        {
+        	return m_map;
+        }
+
+        vector<Tile> getTileSetVector(uint tileset) const {
+        	return m_tilesets.at(tileset).tiles;
+        }
+
         //get data of a layer (0-based)
         string getLayerData(uint layer) const
         {
