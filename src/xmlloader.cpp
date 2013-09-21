@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-21 08:03:26 PM CEST
+ * Last modified: 2013-09-21 08:09:17 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -259,10 +259,13 @@ void LoadedMap::mapTilesToTerrainPointers(string parsed, TileSet *tset, Tile *ta
                 break;
             case 2:
                 target->terrain_2 = &tset->terraintypes[parsed_val];
+                break;
             case 3:
                 target->terrain_3 = &tset->terraintypes[parsed_val];
+                break;
             case 4:
                 target->terrain_4 = &tset->terraintypes[parsed_val];
+                break;
         }
             
         if (ss.peek() == ',')
