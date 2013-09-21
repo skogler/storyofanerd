@@ -1,3 +1,5 @@
+#ifndef ENGINECORE_HPP
+#define ENGINECORE_HPP
 
 struct SDL_Window;
 struct SDL_Renderer;
@@ -17,3 +19,5 @@ private:
 	EngineCore& operator=(const EngineCore& other);
 
 };
+
+#endif /* end of include guard: ENGINECORE_HPP */
