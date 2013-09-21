@@ -3,6 +3,7 @@
 
 #include "Input.hpp"
 #include "common.h"
+#include "Player.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -19,32 +20,29 @@
 struct SDL_Window;
 struct SDL_Renderer;
 
-class EngineCore
-{
+class EngineCore {
 public:
 	EngineCore();
 	virtual ~EngineCore();
 
-    SDL_Window* mWindow;
-    SDL_Renderer* mRenderer;
+	void executeLoop();
+	void render();
+	void eventHandling(Input& input);
 
-    void executeLoop();
-    void render();
-    void eventHandling(Input& input);
-
-    //World offset
-    int xoffset = 0;
-    int yoffset = 0;
-
-
+	//World offset
+	int xoffset = 0;
+	int yoffset = 0;
 
 private:
+
+	SDL_Window* mWindow;
+	SDL_Renderer* mRenderer;
+	Player* player;
+
 	bool mainLoopQuit = false;
 
 	EngineCore(const EngineCore& other);
 	EngineCore& operator=(const EngineCore& other);
-
-
 
 };
 

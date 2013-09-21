@@ -24,6 +24,8 @@ EngineCore::EngineCore() :
 
 	SDL_ShowCursor(SDL_DISABLE);
 
+	player = new Player();
+
 	executeLoop();
 }
 
@@ -38,7 +40,6 @@ EngineCore::~EngineCore() {
 
 void EngineCore::executeLoop() {
 	Input input;
-
 	//FPS variables
 	int sdl_last_tick = 0;
 	int sdl_fps_intervall = 1000 / FPS;
@@ -70,8 +71,8 @@ void EngineCore::render() {
 		std::cout << "tex load failed" << std::endl;
 
 	// test values
-	int map_w = 2000;
-	int map_h = 2000;
+	int map_w = 1000;
+	int map_h = 1000;
 
 	for (int i = 0; i < map_w; i += 40)
 		for (int j = 0; j < map_h; j += 40) {
@@ -83,6 +84,11 @@ void EngineCore::render() {
 			SDL_RenderCopy(mRenderer, tex, NULL, &dst);
 		}
 
+	//Render player
+	SDL_Texture *tex2 = IMG_LoadTexture(mRenderer, "../player.png");
+	SDL_Rect dst = (player->getBoundingBox());
+
+	SDL_RenderCopy(mRenderer, tex2, NULL, &dst);
 
 	SDL_RenderPresent(mRenderer);
 }
@@ -91,14 +97,24 @@ void EngineCore::render() {
 
 void EngineCore::eventHandling(Input& input) {
 	auto& actionList = input.getActions();
+	SDL_Rect player_bbox = (player->getBoundingBox());
 	for (auto& action : actionList) {
 		if (action == InputAction::EXIT) {
 			mainLoopQuit = true;
 		}
-		if (action == InputAction::MOVE_FORWARD)
-			xoffset += 10;
-		else if (action == InputAction::MOVE_BACKWARD)
-			xoffset -= 10;
+		if (action == InputAction::MOVE_FORWARD) {
+		     //fix offset
+			player->moveRight();
+		} else if (action == InputAction::MOVE_BACKWARD) {
+			//fix offset
+
+			player->moveLeft();
+		}
+		if (action == InputAction::JUMP) {
+			player->jump();
+		} else {
+			player->fall();
+		}
 
 	}
 }
