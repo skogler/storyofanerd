@@ -32,6 +32,7 @@ EngineCore::EngineCore()
 	}
 
 	SDL_ShowCursor(SDL_DISABLE);
+	SDL_SetRenderDrawColor( mRenderer, 0xF0, 0xF0, 0xF0, 0xF0 );
 
     // Initialize Audio after SDL
     mAudio.reset(new Audio());
