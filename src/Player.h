@@ -16,9 +16,6 @@ public:
 	void fall();
 	void changeDirection();
 
-	//renders himself to a surface
-	void render(SDL_Surface* screen);
-
 	SDL_Rect getBoundingBox();
 	SDL_Surface* getPlayerImage();
 

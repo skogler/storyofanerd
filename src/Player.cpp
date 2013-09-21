@@ -3,8 +3,8 @@
 Player::Player() {
 
 	lastActionTick = SDL_GetTicks();
-	bounding_box.x = 0;
-	bounding_box.y = 400;
+	bounding_box.x = 320;
+	bounding_box.y = 440;
 	bounding_box.w = 40;
 	bounding_box.h = 40;
 
@@ -36,11 +36,6 @@ void Player::fall() {
 }
 void Player::changeDirection() {
 	// change picture
-}
-
-void Player::render(SDL_Surface* screen) {
-	//SDL_BlitSurface(player_image, NULL, screen, &bounding_box);
-
 }
 
 SDL_Rect Player::getBoundingBox() {

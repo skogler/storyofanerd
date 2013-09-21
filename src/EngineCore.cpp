@@ -1,10 +1,7 @@
 #include "EngineCore.hpp"
 
 EngineCore::EngineCore() :
-		mWindow(nullptr), mRenderer(nullptr)
-        , mAudio(new Audio())
-
-{
+		mWindow(nullptr), mRenderer(nullptr) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		throw std::runtime_error("Could not initialize the SDL2 library!");
 	}
@@ -28,6 +25,7 @@ EngineCore::EngineCore() :
 	SDL_ShowCursor(SDL_DISABLE);
 
 	player = new Player();
+	map = new LoadedMap("../res/maps/testmap.tmx");
 
 	executeLoop();
 }
@@ -43,9 +41,6 @@ EngineCore::~EngineCore() {
 
 void EngineCore::executeLoop() {
 	Input input;
-    mAudio->play();
-    mAudio->setSoundEffectVolume(128);
-
 	//FPS variables
 	int sdl_last_tick = 0;
 	int sdl_fps_intervall = 1000 / FPS;
@@ -61,7 +56,6 @@ void EngineCore::executeLoop() {
 		sdl_last_tick = SDL_GetTicks();
 
 	}
-    mAudio->pause();
 }
 ///////////////////////////////////////////////////////////////////////////
 
@@ -72,8 +66,8 @@ void EngineCore::render() {
 
 	// tiles
 	// map  00 01 02 03  | 11 12 ......
-
-	SDL_Texture *tex = IMG_LoadTexture(mRenderer, "../image.png");
+	SDL_Texture *tex = IMG_LoadTexture(mRenderer,
+			("../res/maps/" + map->getImageName(0)).c_str());
 	if (tex == nullptr)
 		std::cout << "tex load failed" << std::endl;
 
@@ -91,11 +85,26 @@ void EngineCore::render() {
 			SDL_RenderCopy(mRenderer, tex, NULL, &dst);
 		}
 
+	/*
+
+	 int w, h;
+
+	 SDL_QueryTexture(tex, NULL, NULL, &w, &h);
+
+	 SDL_Rect dst;
+	 dst.x = 0;
+	 dst.y = 0;
+	 dst.w = w;
+	 dst.h = h;
+
+	SDL_RenderCopy(mRenderer, tex, NULL, &dst);
+
+	*/
 	//Render player
 	SDL_Texture *tex2 = IMG_LoadTexture(mRenderer, "../player.png");
-	SDL_Rect dst = (player->getBoundingBox());
+	SDL_Rect player_box = (player->getBoundingBox());
 
-	SDL_RenderCopy(mRenderer, tex2, NULL, &dst);
+	SDL_RenderCopy(mRenderer, tex2, NULL, &player_box);
 
 	SDL_RenderPresent(mRenderer);
 }
@@ -110,15 +119,13 @@ void EngineCore::eventHandling(Input& input) {
 			mainLoopQuit = true;
 		}
 		if (action == InputAction::MOVE_FORWARD) {
-		     //fix offset
-			player->moveRight();
+			xoffset -= 5;
+			//player->moveRight();
 		} else if (action == InputAction::MOVE_BACKWARD) {
-			//fix offset
-
-			player->moveLeft();
+			xoffset += 5;
+			//player->moveLeft();
 		}
 		if (action == InputAction::JUMP) {
-            mAudio->playSound("jump.ogg");
 			player->jump();
 		} else {
 			player->fall();

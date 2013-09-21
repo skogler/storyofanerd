@@ -5,6 +5,8 @@
 #include "Audio.hpp"
 #include "common.h"
 #include "Player.h"
+#include "xmlloader.h"
+
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -35,10 +37,10 @@ public:
 	int yoffset = 0;
 
 private:
-
 	SDL_Window* mWindow;
 	SDL_Renderer* mRenderer;
 	Player* player;
+	LoadedMap* map;
 
 	bool mainLoopQuit = false;
 
