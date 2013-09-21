@@ -93,7 +93,6 @@ void EngineCore::render() {
     	    {
     	    	y_coord += map->getTileMap().tileheight;
     	    	x_coord = 0;
-
     	    }
 
 			SDL_Rect dst;
