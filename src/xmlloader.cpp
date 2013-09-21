@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-21 03:26:52 PM CEST
+ * Last modified: 2013-09-21 05:52:13 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -35,6 +35,7 @@
 
 #include <sstream>
 
+//monkey monkey
 const string LoadedMap::XML_MAP             = "map";
 const string LoadedMap::XML_MAP_WIDTH       = "width";
 const string LoadedMap::XML_MAP_HEIGHT      = "height";
@@ -43,10 +44,28 @@ const string LoadedMap::XML_MAP_TILEHEIGHT  = "tileheight";
 
 const string LoadedMap::XML_TILESET         = "tileset";
 const string LoadedMap::XML_TILESET_NAME    = "name";
-const string LoadedMap::XML_TILESET_WIDTH   = "width";
-const string LoadedMap::XML_TILESET_HEIGHT  = "height";
+const string LoadedMap::XML_TILESET_WIDTH   = "tilewidth";
+const string LoadedMap::XML_TILESET_HEIGHT  = "tileheight";
 const string LoadedMap::XML_TILESET_SPACING = "spacing";
 const string LoadedMap::XML_TILESET_MARGIN  = "margin";
+
+const string LoadedMap::XML_IMAGE           = "image";
+const string LoadedMap::XML_IMAGE_SOURCE    = "source";
+const string LoadedMap::XML_IMAGE_WIDTH     = "width";
+const string LoadedMap::XML_IMAGE_HEIGHT    = "height";
+
+const string LoadedMap::XML_TERRAINTYPE     = "terraintypes";
+const string LoadedMap::XML_TERRAIN         = "terrain";
+const string LoadedMap::XML_TERRAIN_NAME    = "name";
+const string LoadedMap::XML_TERRAIN_TILE    = "tile";
+const string LoadedMap::XML_TERRAIN_PROPS   = "properties";
+const string LoadedMap::XML_TERRAIN_PROP    = "property";
+const string LoadedMap::XML_TERRAIN_PROP_NAME   = "name";
+const string LoadedMap::XML_TERRAIN_PROP_VALUE  = "value";
+
+const string LoadedMap::XML_TILE            = "tile";
+const string LoadedMap::XML_TILE_ID         = "id";
+const string LoadedMap::XML_TILE_TERRAIN    = "terrain";
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -72,15 +91,25 @@ void LoadedMap::loadFile()
     ASSERT(root_map);
     loadMap(root_map);
 
-    //TODO loop with sibling || sibling = layer or tileset
-    XMLElement *tileset = m_doc.FirstChildElement(XML_TILESET.c_str());
-    ASSERT(tileset);
+    XMLElement *child = root_map->FirstChildElement();
+    ASSERT(child);
+    while(child != NULL)
+    {
+        if(child->Name() == XML_TILESET)
+        {
+            loadTileset(child);
+        }
+//        else if(child->name == XML_LAYER)
+//
+        child = child->NextSiblingElement();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////
 
 void LoadedMap::loadMap(XMLElement *element)
 {
+    LogDebug("LoadedMap::loadMap");
     stringstream width (element->Attribute(XML_MAP_WIDTH.c_str()));
     stringstream height (element->Attribute(XML_MAP_HEIGHT.c_str()));
     stringstream tilewidth (element->Attribute(XML_MAP_TILEWIDTH.c_str()));
@@ -95,6 +124,118 @@ void LoadedMap::loadMap(XMLElement *element)
 
 void LoadedMap::loadTileset(XMLElement *element)
 {
+    LogDebug2("LoadedMap::loadTileset");
+
+    TileSet tileset;
+    tileset.name = element->Attribute(XML_TILESET_NAME.c_str());
+
+    stringstream tilewidth (element->Attribute(XML_TILESET_WIDTH.c_str()));
+    stringstream tileheight (element->Attribute(XML_TILESET_HEIGHT.c_str()));
+    stringstream spacing (element->Attribute(XML_TILESET_SPACING.c_str()));
+    stringstream margin (element->Attribute(XML_TILESET_MARGIN.c_str()));
+
+    LogDebug2("LoadedMap::loadTileset: Finished parsing attributes");
+
+    tilewidth >> tileset.tilewidth;
+    tileheight >> tileset.tileheight;
+    spacing >> tileset.spacing;
+    margin >> tileset.margin;
+
+    XMLElement *image = element->FirstChildElement(XML_IMAGE.c_str());
+    ASSERT(image);
+    loadImageSource(image, &tileset);
+
+    XMLElement *terrains = element->FirstChildElement(XML_TERRAINTYPE.c_str());
+    ASSERT(terrains);
+    loadTerrains(terrains, &tileset);
+
+    XMLElement *first_tile = element->FirstChildElement(XML_TILE.c_str());
+    ASSERT(first_tile);
+    loadTiles(first_tile, &tileset);
+
+    m_tilesets.push_back(tileset);
 }
 
 ///////////////////////////////////////////////////////////////////////////
+
+void LoadedMap::loadImageSource(XMLElement *element, TileSet *target)
+{
+    LogDebug2("LoadedMap::loadImageSource");
+    target->image.source_image = element->Attribute(XML_IMAGE_SOURCE.c_str());
+
+    stringstream width (element->Attribute(XML_IMAGE_WIDTH.c_str()));
+    stringstream height (element->Attribute(XML_IMAGE_HEIGHT.c_str()));
+
+    width >> target->image.width;
+    height >> target->image.height;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+void LoadedMap::loadTerrains(XMLElement *element, TileSet *target)
+{
+    LogDebug2("LoadedMap::loadTerrains");
+    XMLElement *terrain = element->FirstChildElement(XML_TERRAIN.c_str());
+
+    LogDebug2("LoadedMap::loadTerrains: Found first terrain");
+    while(terrain != NULL)
+    {
+        TerrainType parsed_terrain;
+        parsed_terrain.name = terrain->Attribute(XML_TERRAIN_NAME.c_str());
+
+        stringstream tile (terrain->Attribute(XML_TERRAIN_TILE.c_str()));
+        tile >> parsed_terrain.tile;
+
+        XMLElement *properties = element->FirstChildElement(XML_TERRAIN_PROPS.c_str());
+        if(properties != NULL)
+        {
+            loadProperties(properties, &parsed_terrain);
+        }
+
+        target->terraintypes.push_back(parsed_terrain);
+
+        terrain = terrain->NextSiblingElement();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+void LoadedMap::loadProperties(XMLElement *element, TerrainType *target)
+{
+    XMLElement *property = element->FirstChildElement(XML_TERRAIN_PROP.c_str());
+    while(property != NULL)
+    {
+        std::pair<string, string> parsed_property;
+        parsed_property.first = property->Attribute(XML_TERRAIN_PROP_NAME.c_str());
+        parsed_property.second= property->Attribute(XML_TERRAIN_PROP_VALUE.c_str());
+
+        target->properties.insert(parsed_property);
+        property = property->NextSiblingElement();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+void LoadedMap::loadTiles(XMLElement *element, TileSet *target)
+{
+    while(element != NULL)
+    {
+        Tile parsed_tile;
+
+        stringstream tile_id (element->Attribute(XML_TILE_ID.c_str()));
+        tile_id >> parsed_tile.id; 
+
+        string tile_terrains = element->Attribute(XML_TILE_TERRAIN.c_str());
+        mapTilesToTerrainPointers(tile_terrains, target, &parsed_tile);
+
+        element = element->NextSiblingElement();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+void LoadedMap::mapTilesToTerrainPointers(string parsed, TileSet *tset, Tile *target)
+{
+    //TODO
+}
+

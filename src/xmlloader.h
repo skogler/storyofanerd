@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.h
  * Created:       2013-09-21
- * Last modified: 2013-09-21 03:25:50 PM CEST
+ * Last modified: 2013-09-21 05:44:04 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -70,7 +70,7 @@ struct ImageSource
 
 struct TileSet
 {
-    string      tileset;
+    string      name;
     uint        tilewidth;
     uint        tileheight;
     uint        spacing;
@@ -114,10 +114,15 @@ class LoadedMap
         ~LoadedMap();
 
     private:
-        //TODO: error handling
+        //TODO: error handling (maybe...)
         void loadFile();
         void loadMap(XMLElement *element);
         void loadTileset(XMLElement *element);
+        void loadImageSource(XMLElement *element, TileSet *target);
+        void loadTerrains(XMLElement *element, TileSet *target);
+        void loadProperties(XMLElement *element, TerrainType *target);
+        void loadTiles(XMLElement *element, TileSet *target);
+        void mapTilesToTerrainPointers(string parsed, TileSet *tset, Tile *target);
 
         string          m_filename;
 
@@ -144,6 +149,19 @@ class LoadedMap
         static const string XML_IMAGE_SOURCE;
         static const string XML_IMAGE_WIDTH;
         static const string XML_IMAGE_HEIGHT;
+
+        static const string XML_TERRAINTYPE;
+        static const string XML_TERRAIN;
+        static const string XML_TERRAIN_NAME;
+        static const string XML_TERRAIN_TILE;
+        static const string XML_TERRAIN_PROPS;
+        static const string XML_TERRAIN_PROP;
+        static const string XML_TERRAIN_PROP_NAME;
+        static const string XML_TERRAIN_PROP_VALUE;
+
+        static const string XML_TILE;
+        static const string XML_TILE_ID;
+        static const string XML_TILE_TERRAIN;
 };
 
 #endif
