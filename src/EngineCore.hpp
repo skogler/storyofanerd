@@ -28,33 +28,33 @@ public:
 	EngineCore();
 	virtual ~EngineCore();
 
-	void executeLoop();
+	void start();
+
+private:
+	EngineCore(const EngineCore& other);
+	EngineCore& operator=(const EngineCore& other);
+
+protected:
+	void generateTilesetResources();
+    void update(int delta);
 	void render();
 	void eventHandling(Input& input);
 
-	//World offset
-	int xoffset = 0;
-	int yoffset = 0;
-
-private:
+    // DATA
+	bool mMainLoopQuit;
 	SDL_Window* mWindow;
 	SDL_Renderer* mRenderer;
-	Player* player;
-	LoadedMap* map;
+    SDL_Rect mViewport;
+    std::unique_ptr<Player> mPlayer;
+    std::unique_ptr<Audio> mAudio;
 
+	LoadedMap* map;
 	SDL_Texture* tileSet;
 	vector<SDL_Rect> tileClips;
 	short current_clip = 0;
 
-	bool mainLoopQuit = false;
-
-	EngineCore(const EngineCore& other);
-	EngineCore& operator=(const EngineCore& other);
-
-	void generateTilesetResources();
-
-protected:
-    std::unique_ptr<Audio> mAudio;
+    // should go somewhere else
+    SDL_Texture* mPlayerImage;
 };
 
 #endif /* end of include guard: ENGINECORE_HPP */

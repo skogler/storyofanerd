@@ -5,29 +5,37 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-class Player {
+enum class PlayerMovementState
+{
+    RUNNING_LEFT,
+    RUNNING_RIGHT,
+    STANDING
+};
+
+class Player
+{
 public:
 	Player();
 	virtual ~Player();
 
+    void update(int delta);
+
 	void moveLeft();
 	void moveRight();
 	void jump();
-	void fall();
-	void changeDirection();
 
-	SDL_Rect getBoundingBox();
+	const SDL_Rect& getBoundingBox();
 	SDL_Surface* getPlayerImage();
 
-private:
-	SDL_Rect bounding_box;
-	SDL_Surface* player_image;
+protected:
+    const float mSpeed;
+    const unsigned int mJumpDuration;
 
-	// for sync
-	int lastActionTick;
+    bool mJumping;
+    PlayerMovementState mMovementState;
 
-
-
+	SDL_Rect mBoundingBox;
+    int mJumpElapsedTime;
 };
 
 #endif /* PLAYER_H_ */

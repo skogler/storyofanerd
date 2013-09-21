@@ -1,47 +1,68 @@
 #include "Player.h"
 
-Player::Player() {
-
-	lastActionTick = SDL_GetTicks();
-	bounding_box.x = 320;
-	bounding_box.y = 440;
-	bounding_box.w = 40;
-	bounding_box.h = 40;
-
+Player::Player()
+    : mSpeed(0.3f)
+    , mJumpDuration(400)
+    , mJumping(false)
+    , mMovementState(PlayerMovementState::STANDING)
+{
+	mBoundingBox.x = 320;
+	mBoundingBox.y = 200;
+	mBoundingBox.w = 40;
+	mBoundingBox.h = 40;
 }
 
-Player::~Player() {
-	//SDL_FreeSurface(player_image);
+Player::~Player()
+{
 }
 
-void Player::moveLeft() {
-	bounding_box.x -= 5;
-	changeDirection();
+void Player::update(int delta)
+{
+    if (mJumping) {
+        if (mJumpElapsedTime < mJumpDuration) {
+            mJumpElapsedTime += delta;
+            mBoundingBox.y -= static_cast<int>(delta * mSpeed * 2);
+        }
+    }
 
+    if (mMovementState == PlayerMovementState::RUNNING_LEFT) {
+        mBoundingBox.x -= static_cast<int>(2 * mSpeed * delta);
+        // Clamp
+        if (mBoundingBox.x <= 0) {
+            mBoundingBox.x = 0;
+            mMovementState = PlayerMovementState::STANDING;
+        }
+    } else if (mMovementState == PlayerMovementState::RUNNING_RIGHT) {
+        mBoundingBox.x += static_cast<int>(2 * mSpeed * delta);
+    }
+
+    // Fall
+	if((mBoundingBox.y + mBoundingBox.h) < 440) {
+		mBoundingBox.y += static_cast<int>(mSpeed * delta);
+    } else if (mJumping) {
+        // Reset jump variables once we are back on the ground
+        mJumpElapsedTime = 0;
+        mJumping = false;
+    }
+    mMovementState = PlayerMovementState::STANDING;
 }
 
-void Player::moveRight() {
-	bounding_box.x += 5;
-	changeDirection();
+void Player::moveLeft()
+{
+    mMovementState = PlayerMovementState::RUNNING_LEFT;
 }
 
-void Player::jump() {
-	if(bounding_box.y > 1)
-		bounding_box.y -= 60;
+void Player::moveRight()
+{
+    mMovementState = PlayerMovementState::RUNNING_RIGHT;
 }
 
-void Player::fall() {
-	if(bounding_box.y < 440)
-		bounding_box.y += 1;
-}
-void Player::changeDirection() {
-	// change picture
+void Player::jump()
+{
+    mJumping = true;
 }
 
-SDL_Rect Player::getBoundingBox() {
-	return bounding_box;
-}
-
-SDL_Surface* Player::getPlayerImage() {
-	return player_image;
+const SDL_Rect& Player::getBoundingBox()
+{
+	return mBoundingBox;
 }

@@ -1,7 +1,16 @@
 #include "EngineCore.hpp"
+#include <cstdlib>
+#include <sstream>
 
-EngineCore::EngineCore() :
-		mWindow(nullptr), mRenderer(nullptr) {
+EngineCore::EngineCore()
+    : mMainLoopQuit(false)
+    , mWindow(nullptr)
+    , mRenderer(nullptr)
+    , mViewport({0,0,640,480})
+    , mPlayer(nullptr)
+    , mAudio(nullptr)
+    , mPlayerImage(nullptr)
+{
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		throw std::runtime_error("Could not initialize the SDL2 library!");
 	}
@@ -24,18 +33,29 @@ EngineCore::EngineCore() :
 
 	SDL_ShowCursor(SDL_DISABLE);
 
-	player = new Player();
+    // Initialize Audio after SDL
+    mAudio.reset(new Audio());
+	mPlayer.reset(new Player());
+	mPlayerImage = IMG_LoadTexture(mRenderer, "../player.png");
 	map = new LoadedMap("../res/maps/testmap.tmx");
-
 	tileSet = IMG_LoadTexture(mRenderer,
 			("../res/maps/" + map->getImageName(0)).c_str());
 	if(tileSet == nullptr)
 		std::cout << "tilesetLoadfailed" << std::endl;
 	generateTilesetResources();
-	executeLoop();
 }
 
 EngineCore::~EngineCore() {
+    delete map;
+    if (tileSet) {
+        SDL_DestroyTexture(tileSet);
+    }
+    if (mPlayerImage) {
+        SDL_DestroyTexture(mPlayerImage);
+    }
+    if (mRenderer) {
+        SDL_DestroyRenderer(mRenderer);
+    }
 	if (mWindow) {
 		SDL_DestroyWindow(mWindow);
 	}
@@ -44,23 +64,39 @@ EngineCore::~EngineCore() {
 
 ///////////////////////////////////////////////////////////////////////////
 
-void EngineCore::executeLoop() {
+void EngineCore::start() {
 	Input input;
+    mAudio->play();
+    mAudio->setSoundEffectVolume(128);
+    mAudio->setMusicVolume(64);
+
 	//FPS variables
 	int sdl_last_tick = 0;
+    int sdl_new_tick = 0;
+    int delta = 0;
 	int sdl_fps_intervall = 1000 / FPS;
 
-	while (!mainLoopQuit) {
-		render();
+	while (!mMainLoopQuit) {
 		eventHandling(input);
+        update(delta);
+		render();
 
 		//FPS code
-		if (sdl_last_tick + sdl_fps_intervall > SDL_GetTicks()) {
-			SDL_Delay((sdl_last_tick + sdl_fps_intervall) - SDL_GetTicks());
+        sdl_new_tick = SDL_GetTicks();
+
+        delta = sdl_new_tick - sdl_last_tick;
+		if (delta < sdl_fps_intervall) {
+			SDL_Delay(sdl_fps_intervall - delta);
 		}
-		sdl_last_tick = SDL_GetTicks();
+		sdl_last_tick = sdl_new_tick;
 
 	}
+}
+///////////////////////////////////////////////////////////////////////////
+void EngineCore::update(int delta)
+{
+    mPlayer->update(delta);
+    mViewport.x = mPlayer->getBoundingBox().x - mViewport.w/2;
 }
 ///////////////////////////////////////////////////////////////////////////
 
@@ -96,31 +132,19 @@ void EngineCore::render() {
     	    }
 
 			SDL_Rect dst;
-			dst.x = x_coord + xoffset;
-			dst.y = y_coord + yoffset;
+			dst.x = x_coord - mViewport.x;
+			dst.y = y_coord - mViewport.y;
 			dst.w = tileClips.at(current_clip).w;
 			dst.h = tileClips.at(current_clip).h;
 
 			SDL_RenderCopy(mRenderer, tileSet, &tileClips[current_clip], &dst);
-    	}
-    /*
-	for (int i = 0; i < map_w; i += 40)
-		for (int j = 0; j < map_h; j += 40) {
-			SDL_Rect dst;
-			dst.x = i + xoffset;
-			dst.y = j + yoffset;
-			dst.w = tileClips.at(current_clip).w;
-			dst.h = tileClips.at(current_clip).h;
-			SDL_RenderCopy(mRenderer, tileSet, &tileClips[current_clip], &dst);
+    }
 
-		}*/
-
-	//Render player
-	SDL_Texture *tex2 = IMG_LoadTexture(mRenderer, "../player.png");
-	SDL_Rect player_box = (player->getBoundingBox());
-
-	SDL_RenderCopy(mRenderer, tex2, NULL, &player_box);
-
+	//Render mPlayer
+    SDL_Rect dst(mPlayer->getBoundingBox());
+    dst.x -= mViewport.x;
+    dst.y -= (mViewport.y - dst.h);
+	SDL_RenderCopy(mRenderer, mPlayerImage, NULL, &dst);
 	SDL_RenderPresent(mRenderer);
 }
 
@@ -128,24 +152,23 @@ void EngineCore::render() {
 
 void EngineCore::eventHandling(Input& input) {
 	auto& actionList = input.getActions();
-	SDL_Rect player_bbox = (player->getBoundingBox());
+	SDL_Rect mPlayer_bbox = (mPlayer->getBoundingBox());
 	for (auto& action : actionList) {
 		if (action == InputAction::EXIT) {
-			mainLoopQuit = true;
+			mMainLoopQuit = true;
 		}
 		if (action == InputAction::MOVE_FORWARD) {
-			xoffset -= 5;
-			//player->moveRight();
+			mPlayer->moveRight();
 		} else if (action == InputAction::MOVE_BACKWARD) {
-			xoffset += 5;
-			//player->moveLeft();
+			mPlayer->moveLeft();
 		}
 		if (action == InputAction::JUMP) {
-			player->jump();
-		} else {
-			player->fall();
-		}
-
+            int index = random() % 3 + 1;
+            std::stringstream filename;
+            filename << "jump" << index << ".wav";
+            mAudio->playSound(filename.str());
+			mPlayer->jump();
+        }
 	}
 }
 
@@ -167,8 +190,6 @@ void EngineCore::generateTilesetResources() {
 		rect.h = tile_h;
 		tileClips.push_back(rect);
 	}
-
-
 
 	current_clip = 0;
 }

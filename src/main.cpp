@@ -8,8 +8,8 @@ int main()
 {
 	try
 	{
-		EngineCore();
-
+		EngineCore engine;
+        engine.start();
 
 	} catch (std::exception& ex) {
 		LogFatal(ex.what());

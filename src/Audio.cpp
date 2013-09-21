@@ -4,7 +4,7 @@
 #include <sstream>
 
 Audio::Audio()
-    : mSoundPath(fs::current_path() / ".." / "res" / "sounds")
+    : mSoundPath(fs::initial_path() / ".." / "res" / "sounds")
     , mSoundEffectPath(mSoundPath / "effects")
     , mMusicPath(mSoundPath / "music")
     , mPaused(false)
@@ -109,6 +109,7 @@ bool Audio::playSound(const std::string& soundName)
 {
     const auto& effectEntry = mSoundEffects.find(soundName);
     if (effectEntry == mSoundEffects.end()) {
+        LogWarning("Sound file \"" << soundName << "\" not found");
         return false;
     }
     if (!effectEntry->second) {
