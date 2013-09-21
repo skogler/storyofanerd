@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.h
  * Created:       2013-09-21
- * Last modified: 2013-09-21 02:39:12 PM CEST
+ * Last modified: 2013-09-21 03:25:50 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -44,6 +44,7 @@
 #include "errorcodes.h"
 
 using namespace std;
+using namespace tinyxml2;
 
 typedef struct TileMap TileMap;
 typedef struct ImageSource ImageSource;
@@ -56,7 +57,7 @@ struct TileMap
 {
     uint        width;
     uint        height;
-    uint        tilewith;
+    uint        tilewidth;
     uint        tileheight;
 };
 
@@ -90,7 +91,7 @@ struct TerrainType
 
 struct Tile
 {
-    uint        id;
+    uint         id;
     TerrainType* terrain_1;
     TerrainType* terrain_2;
     TerrainType* terrain_3;
@@ -113,12 +114,36 @@ class LoadedMap
         ~LoadedMap();
 
     private:
-        void loadMap();
+        //TODO: error handling
+        void loadFile();
+        void loadMap(XMLElement *element);
+        void loadTileset(XMLElement *element);
+
+        string          m_filename;
+
         TileMap         m_map;
         vector<TileSet> m_tilesets;
         vector<Layer>   m_layers;
 
         XMLDocument     m_doc;
+
+        static const string XML_MAP;
+        static const string XML_MAP_WIDTH;
+        static const string XML_MAP_HEIGHT;
+        static const string XML_MAP_TILEWIDTH;
+        static const string XML_MAP_TILEHEIGHT;
+
+        static const string XML_TILESET;
+        static const string XML_TILESET_NAME;
+        static const string XML_TILESET_WIDTH;
+        static const string XML_TILESET_HEIGHT;
+        static const string XML_TILESET_SPACING;
+        static const string XML_TILESET_MARGIN;
+
+        static const string XML_IMAGE;
+        static const string XML_IMAGE_SOURCE;
+        static const string XML_IMAGE_WIDTH;
+        static const string XML_IMAGE_HEIGHT;
 };
 
 #endif
