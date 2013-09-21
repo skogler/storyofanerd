@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.h
  * Created:       2013-09-21
- * Last modified: 2013-09-21 09:13:21 PM CEST
+ * Last modified: 2013-09-21 09:35:32 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -144,6 +144,23 @@ class LoadedMap
             }
 
             return m_tilesets.at(tileset).image.source_image;
+        }
+
+        //get data of a layer (0-based)
+        string getLayerData(uint layer) const
+        {
+            if(layer > m_layers.size())
+            {
+                return "";
+            }
+
+            return m_layers.at(layer).data;
+        }
+        
+        //this contains boxes for events etc
+        vector<ObjectGroup> getObjectGroups() const
+        {
+            return m_objectgroups;
         }
 
     private:
