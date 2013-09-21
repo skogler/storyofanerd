@@ -1,7 +1,10 @@
 #include "EngineCore.hpp"
 
 EngineCore::EngineCore() :
-		mWindow(nullptr), mRenderer(nullptr) {
+		mWindow(nullptr), mRenderer(nullptr)
+        , mAudio(new Audio())
+
+{
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		throw std::runtime_error("Could not initialize the SDL2 library!");
 	}
@@ -40,6 +43,9 @@ EngineCore::~EngineCore() {
 
 void EngineCore::executeLoop() {
 	Input input;
+    mAudio->play();
+    mAudio->setSoundEffectVolume(128);
+
 	//FPS variables
 	int sdl_last_tick = 0;
 	int sdl_fps_intervall = 1000 / FPS;
@@ -55,6 +61,7 @@ void EngineCore::executeLoop() {
 		sdl_last_tick = SDL_GetTicks();
 
 	}
+    mAudio->pause();
 }
 ///////////////////////////////////////////////////////////////////////////
 
@@ -111,6 +118,7 @@ void EngineCore::eventHandling(Input& input) {
 			player->moveLeft();
 		}
 		if (action == InputAction::JUMP) {
+            mAudio->playSound("jump.ogg");
 			player->jump();
 		} else {
 			player->fall();

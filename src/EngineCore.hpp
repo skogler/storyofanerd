@@ -2,6 +2,7 @@
 #define ENGINECORE_HPP
 
 #include "Input.hpp"
+#include "Audio.hpp"
 #include "common.h"
 #include "Player.h"
 
@@ -44,6 +45,8 @@ private:
 	EngineCore(const EngineCore& other);
 	EngineCore& operator=(const EngineCore& other);
 
+protected:
+    std::unique_ptr<Audio> mAudio;
 };
 
 #endif /* end of include guard: ENGINECORE_HPP */
