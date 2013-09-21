@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="32" height="5" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" source="desert.tsx"/>
+ <layer name="Tile Layer 1" width="32" height="5">
+  <data encoding="base64" compression="zlib">
+   eJxjYBjcgAsLpoZ6bOpIsQefGeTqI0YvNQExYYDNbdSIExgGAAqeAjE=
+  </data>
+ </layer>
+ <objectgroup draworder="topdown" name="Object Layer 1" width="32" height="5">
+  <object name="goal" x="992" y="1" width="31" height="31"/>
+  <object name="start" x="1" y="17" width="40" height="45"/>
+  <object name="event" x="523" y="5" width="49" height="53"/>
+ </objectgroup>
+</map>
