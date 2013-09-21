@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.h
  * Created:       2013-09-21
- * Last modified: 2013-09-21 08:32:34 PM CEST
+ * Last modified: 2013-09-21 09:13:21 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -134,6 +134,17 @@ class LoadedMap
     public:
         explicit LoadedMap(const string &filename);
         ~LoadedMap();
+
+        //pass tileset index (0-based)
+        string getImageName(uint tileset) const
+        {
+            if(tileset > m_tilesets.size())
+            {
+                return "";
+            }
+
+            return m_tilesets.at(tileset).image.source_image;
+        }
 
     private:
         //TODO: error handling (maybe...)
