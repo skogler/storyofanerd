@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-22 09:58:46 AM CEST
+ * Last modified: 2013-09-22 10:14:52 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -194,9 +194,11 @@ void LoadedMap::loadTileset(XMLElement *element)
 
     XMLElement *first_tile = element->FirstChildElement(XML_TILE.c_str());
     ASSERT(first_tile);
-    loadTiles(first_tile, &tileset);
 
+    //NOTE: MUST push first because we reference afterwards (terrain
+    //pointers)
     m_tilesets.push_back(tileset);
+    loadTiles(first_tile, &m_tilesets.back());
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -296,7 +298,7 @@ void LoadedMap::loadTiles(XMLElement *element, TileSet *target)
         element = element->NextSiblingElement();
     }
 
-    LogDebug("LoadedMap::loadTiles: Loaded " << target->tiles.size());
+    LogDebug("LoadedMap::loadTiles: Loaded " << target->tiles.size() << " for " << target->name);
 }
 
 ///////////////////////////////////////////////////////////////////////////
