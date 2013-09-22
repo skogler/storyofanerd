@@ -37,9 +37,9 @@ void Player::update(int delta)
     }
 
     // Fall
-	if((mBoundingBox.y + mBoundingBox.h) < 440) {
-		mBoundingBox.y += static_cast<int>(mSpeed * delta);
-    } else if (mJumping) {
+    mBoundingBox.y += static_cast<int>(mSpeed * delta);
+	if((mBoundingBox.y + mBoundingBox.h) >= 480) {
+        mBoundingBox.y = 480 - mBoundingBox.h;
         // Reset jump variables once we are back on the ground
         mJumpElapsedTime = 0;
         mJumping = false;

@@ -33,7 +33,11 @@ EngineCore::EngineCore() :
 	mAudio.reset(new Audio());
 	mPlayer.reset(new Player());
 	mPlayerImage = IMG_LoadTexture(mRenderer, "../player.png");
+
+    //load the map | TODO: error handling
 	map = new LoadedMap("../res/maps/testmap.tmx");
+    map->loadFile();
+
 	tileSet = IMG_LoadTexture(mRenderer,
 			("../res/maps/" + map->getImageName(0)).c_str());
 	if (tileSet == nullptr)
