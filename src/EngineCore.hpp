@@ -51,6 +51,7 @@ protected:
 
 	LoadedMap* map;
 	SDL_Texture* tileSet;
+	SDL_Texture* background;
 	vector<SDL_Rect> tileClips;
 	short current_clip = 0;
 

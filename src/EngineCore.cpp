@@ -44,6 +44,8 @@ EngineCore::EngineCore() :
 	if (tileSet == nullptr)
 		std::cout << "tilesetLoadfailed" << std::endl;
 
+	background = IMG_LoadTexture(mRenderer,("../res/images/background.png"));
+
 	generateTilesetResources(tileSetSurface->w, tileSetSurface->h);
 }
 
@@ -104,6 +106,9 @@ void EngineCore::update(int delta) {
 void EngineCore::render() {
 	//Clear screen
 	SDL_RenderClear(mRenderer);
+
+	SDL_RenderCopy(mRenderer, background, NULL, &mViewport);
+
 
 	//Parse tile data
 	string tile_data = map->getLayerData(0);
