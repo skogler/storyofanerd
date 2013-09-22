@@ -5,7 +5,8 @@
 EngineCore::EngineCore() :
 		mMainLoopQuit(false), mWindow(nullptr), mRenderer(nullptr), mViewport( {
 				0, 0, SCREEN_WIDTH, SCREEN_HEIGHT }), mPlayer(nullptr), mAudio(
-				nullptr), mPlayerImage(nullptr) {
+				nullptr), mPlayerImage(nullptr), backgroundRect( {
+	0, 0, SCREEN_WIDTH, SCREEN_HEIGHT }) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		throw std::runtime_error("Could not initialize the SDL2 library!");
 	}
@@ -107,12 +108,8 @@ void EngineCore::render() {
 	//Clear screen
 	SDL_RenderClear(mRenderer);
 
-	SDL_Rect back(mPlayer->getBoundingBox());
-	back.x -= mViewport.x;
-	back.y -= (mViewport.y - back.h);
-	back.w = mViewport.w * 2;
-	back.h = mViewport.h * 2;
-	SDL_RenderCopy(mRenderer, background, NULL, &back);
+
+	SDL_RenderCopy(mRenderer, background, NULL, &backgroundRect);
 
 	//Parse tile data
 	string tile_data = map->getLayerData(0);
@@ -158,9 +155,10 @@ void EngineCore::render() {
 
 	//Render mPlayer
 	SDL_Rect dst(mPlayer->getBoundingBox());
-	dst.x -= mViewport.x;
+	dst.x -= mViewport.x - dst.w;
 	dst.y -= (mViewport.y - dst.h);
 	SDL_RenderCopy(mRenderer, mPlayerImage, NULL, &dst);
+
 	SDL_RenderPresent(mRenderer);
 }
 

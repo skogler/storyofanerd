@@ -25,6 +25,9 @@ public:
 	void jump();
 
 	const SDL_Rect& getBoundingBox();
+	inline void setBoundingBox(SDL_Rect rect) {
+		mBoundingBox = rect;
+	}
 	SDL_Surface* getPlayerImage();
 
 protected:
