@@ -147,6 +147,26 @@ class LoadedMap
             return m_tilesets.at(tileset).image.source_image;
         }
 
+        int getTileSetSpacing(uint tileset) const
+        {
+            if(tileset > m_tilesets.size())
+            {
+                return 0;
+            }
+
+            return m_tilesets.at(tileset).spacing;
+        }
+
+        int getTileSetMargin(uint tileset) const
+        {
+            if(tileset > m_tilesets.size())
+            {
+                return 0;
+            }
+
+            return m_tilesets.at(tileset).margin;
+        }
+
         TileMap getTileMap() const
         {
         	return m_map;
@@ -155,6 +175,8 @@ class LoadedMap
         vector<Tile> getTileSetVector(uint tileset) const {
         	return m_tilesets.at(tileset).tiles;
         }
+
+
 
         //get data of a layer (0-based)
         string getLayerData(uint layer) const
