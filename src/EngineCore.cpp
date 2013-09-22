@@ -156,8 +156,6 @@ void EngineCore::render() {
 		}
 		space_index++;
 	}
-    SDL_SetRenderDrawColor(mRenderer, 255, 0, 0, 255);
-    SDL_RenderDrawRects(mRenderer, &(mMap->getCollisionGeometry())[0], mMap->getCollisionGeometry().size());
 
 	//Render mPlayer
 	SDL_Rect dst(mPlayer->getBoundingBox());
