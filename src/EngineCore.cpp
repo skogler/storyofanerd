@@ -34,9 +34,9 @@ EngineCore::EngineCore() :
 	mPlayer.reset(new Player());
 	mPlayerImage = IMG_LoadTexture(mRenderer, "../player.png");
 
-    //load the map | TODO: error handling
+	//load the map | TODO: error handling
 	map = new LoadedMap("../res/maps/testmap.tmx");
-    map->loadFile();
+	map->loadFile();
 
 	tileSet = IMG_LoadTexture(mRenderer,
 			("../res/maps/" + map->getImageName(0)).c_str());
@@ -103,7 +103,7 @@ void EngineCore::render() {
 	//Clear screen
 	SDL_RenderClear(mRenderer);
 
-	vector<Tile> tile_vec = map->getTileSetVector(0);
+	//vector<Tile> tile_vec = map->getTileSetVector(0);
 
 	//Parse tile data
 	string tile_data = map->getLayerData(0);
@@ -117,11 +117,15 @@ void EngineCore::render() {
 			ss.ignore();
 	}
 
+	int margin = map->getTileSetMargin(0);
+	int spacing = map->getTileSetSpacing(0);
 	int x_coord = 0;
-	int y_coord = 480 - (map->getTileMap().height * map->getTileMap().tileheight) ;
-	int tile_width = map->getTileMap().tilewidth;
+	int y_coord = 480
+			- (map->getTileMap().height * map->getTileMap().tileheight);
+	int tile_width = map->getTileMap().tilewidth  ;
 	int tiles_in_row = map->getTileMap().width;
 
+	int space_index = 0;
 	for (std::vector<int>::iterator it = tile_data_ints.begin();
 			it != tile_data_ints.end(); ++it) {
 		current_clip = *it;
@@ -131,14 +135,16 @@ void EngineCore::render() {
 		dst.w = tileClips.at(current_clip).w;
 		dst.h = tileClips.at(current_clip).h;
 
-		if(current_clip != 0)
-			SDL_RenderCopy(mRenderer, tileSet, &(tileClips.at(current_clip)), &dst);
+		if (current_clip != 0)
+			SDL_RenderCopy(mRenderer, tileSet, &(tileClips.at(current_clip)),
+					&dst);
 
 		x_coord += tile_width;
 		if (x_coord == (tiles_in_row * tile_width)) {
-			y_coord += map->getTileMap().tileheight;
+			y_coord += map->getTileMap().tileheight ;
 			x_coord = 0;
 		}
+		space_index++;
 	}
 
 	//Render mPlayer
@@ -177,17 +183,18 @@ void EngineCore::generateTilesetResources() {
 
 	int tile_w = map->getTileMap().tilewidth;
 	int tile_h = map->getTileMap().tileheight;
+	std::cout << tile_w << " -  " << tile_h << std::endl;
 
 	int margin = map->getTileSetMargin(0);
 	int spacing = map->getTileSetSpacing(0);
 
-	tile_w += 2 * margin;
-	tile_h += 2 * margin;
 
-	for (int i = 0; i < 48; ++i) {
+	for (int j = 0; j <= 8; j++)
+	for (int i = 0; i <=6; i++) {
+
 		SDL_Rect rect;
-		rect.x = i % tile_w + i * spacing;
-		rect.y = i / tile_h + i * spacing;
+		rect.x = j + tile_w;
+		rect.y = i + tile_h;
 		rect.w = tile_w;
 		rect.h = tile_h;
 		tileClips.push_back(rect);
