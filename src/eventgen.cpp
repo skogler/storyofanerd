@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          eventgen.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-22 11:37:29 AM CEST
+ * Last modified: 2013-09-22 04:00:39 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -54,7 +54,12 @@ Eventgen::~Eventgen()
 
 vector<Event> Eventgen::checkForEvents(uint x, uint y)
 {
+    //TODO: remove
+    y = 10;
+
+    LogDebug("Checking events for x/y: " << x << "/" << y);
     vector<Event> to_trigger;
+
     for(vector<ObjectGroup>::const_iterator git = m_grouped_event_boxes.cbegin();
         git != m_grouped_event_boxes.cend(); git++)
     {
@@ -74,14 +79,16 @@ vector<Event> Eventgen::checkForEvents(uint x, uint y)
             oit != git->objects.cend(); oit++)
         {
             //did not reach point yet
-            if(oit->x < x || oit->y < y)
+            if(x < oit->x || y < oit->y)
             {
+                LogDebug("Did not reach x/y points for " << oit->name << "(" << oit->x << "/" << oit->y << ")");
                 continue;
             }
 
             //check if within checkbox (assuming we crossed x/y border)
-            if(oit->x + oit->width < x && oit->y + oit->height < y)
+            if(x < oit->x + oit->width && y < oit->y + oit->height)
             {
+                LogDebug("Within checkbox of event " << oit->name);
                 Event event;
                 event.group = &(*git);
                 event.object = &(*oit);
@@ -107,6 +114,7 @@ vector<Event> Eventgen::checkForEvents(uint x, uint y)
 
                     if(found)
                     {
+                        LogDebug("Not triggering single event again");
                         continue;
                     }
                     else
@@ -121,14 +129,14 @@ vector<Event> Eventgen::checkForEvents(uint x, uint y)
         }
     }
 
-    LogDebug2("Triggering " << to_trigger.size() << " events");
+    LogDebug("Triggering " << to_trigger.size() << " events");
     return to_trigger;
 }
 
 ///////////////////////////////////////////////////////////////////////////
 
-Eventhandler::Eventhandler(const string &eventhandlername) :
-    m_eventhandlername(eventhandlername)
+Eventhandler::Eventhandler(const string &eventhandlername, SDL_Surface *surface) :
+    m_eventhandlername(eventhandlername), m_surface(surface)
 {
 }
 
@@ -142,9 +150,32 @@ Eventhandler::~Eventhandler()
 
 ErrorCode Eventhandler::executeEvent(const Event &event) const
 {
-    LogDebug2("Eventhandler::executeEvent... not doing anything here");
+    LogDebug("Eventhandler::executeEvent... not doing anything here");
     return OK;
 }
+
+///////////////////////////////////////////////////////////////////////////
+
+HandlerText::HandlerText(const string &eventhandlername, SDL_Surface *surface,
+                         const string &text_to_draw) :
+                        Eventhandler(eventhandlername, surface),
+                        m_text_to_draw(text_to_draw)
+{
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+HandlerText::~HandlerText()
+{
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+ErrorCode HandlerText::executeEvent(const Event &event) const
+{
+    LogInfo("Executing Event! Success!");
+    return OK;
+};
 
 ///////////////////////////////////////////////////////////////////////////
 

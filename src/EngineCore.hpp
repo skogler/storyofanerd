@@ -7,6 +7,7 @@
 #include "Player.h"
 #include "xmlloader.h"
 
+#include "eventgen.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -58,6 +59,9 @@ protected:
 
     // should go somewhere else
     SDL_Texture* mPlayerImage;
+
+    Eventgen *mEventgen;
+    EventhandlerMaster *mEventhandler;
 };
 
 #endif /* end of include guard: ENGINECORE_HPP */
