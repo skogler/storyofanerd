@@ -4,14 +4,14 @@
 
 EngineCore::EngineCore() :
 		mMainLoopQuit(false), mWindow(nullptr), mRenderer(nullptr), mViewport( {
-				0, 0, SCREEN_WIDTH, SCREEN_HEIGHT }), mPlayer(nullptr), mAudio(nullptr), mPlayerImage(
-				nullptr) {
+				0, 0, SCREEN_WIDTH, SCREEN_HEIGHT }), mPlayer(nullptr), mAudio(
+				nullptr), mPlayerImage(nullptr) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		throw std::runtime_error("Could not initialize the SDL2 library!");
 	}
 
 	mWindow = SDL_CreateWindow("Game", SDL_WINDOWPOS_CENTERED,
-	SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE );
+	SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE);
 	if (!mWindow) {
 		std::stringstream ss("Error opening window: ");
 		ss << SDL_GetError();
@@ -29,7 +29,6 @@ EngineCore::EngineCore() :
 	SDL_ShowCursor(SDL_DISABLE);
 	SDL_SetRenderDrawColor(mRenderer, 0xF0, 0xF0, 0xF0, 0xF0);
 
-
 	// Initialize Audio after SDL
 	mAudio.reset(new Audio());
 	mPlayer.reset(new Player());
@@ -39,12 +38,13 @@ EngineCore::EngineCore() :
 	map = new LoadedMap("../res/maps/testmap.tmx");
 	map->loadFile();
 
-	SDL_Surface* tileSetSurface  = IMG_Load(("../res/maps/" + map->getImageName(0)).c_str());
+	SDL_Surface* tileSetSurface = IMG_Load(
+			("../res/maps/" + map->getImageName(0)).c_str());
 	tileSet = SDL_CreateTextureFromSurface(mRenderer, tileSetSurface);
 	if (tileSet == nullptr)
 		std::cout << "tilesetLoadfailed" << std::endl;
 
-	background = IMG_LoadTexture(mRenderer,("../res/images/background.png"));
+	background = IMG_LoadTexture(mRenderer, ("../res/images/background.png"));
 
 	generateTilesetResources(tileSetSurface->w, tileSetSurface->h);
 }
@@ -101,14 +101,18 @@ void EngineCore::update(int delta) {
 	mPlayer->update(delta);
 	mViewport.x = mPlayer->getBoundingBox().x - mViewport.w / 2;
 }
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////	///
 
 void EngineCore::render() {
 	//Clear screen
 	SDL_RenderClear(mRenderer);
 
-	SDL_RenderCopy(mRenderer, background, NULL, &mViewport);
-
+	SDL_Rect back(mPlayer->getBoundingBox());
+	back.x -= mViewport.x;
+	back.y -= (mViewport.y - back.h);
+	back.w = mViewport.w * 2;
+	back.h = mViewport.h * 2;
+	SDL_RenderCopy(mRenderer, background, NULL, &back);
 
 	//Parse tile data
 	string tile_data = map->getLayerData(0);
@@ -192,13 +196,12 @@ void EngineCore::generateTilesetResources(int tileSetWidth, int tileSetHeight) {
 	int margin = map->getTileSetMargin(0);
 	int spacing = map->getTileSetSpacing(0);
 
-
 	int size = map->getTileSetVector(0).size();
 
 	int tileWcheck = tileSetWidth / tile_w;
 	int tileHcheck = tileSetHeight / tile_h;
-	for (int j = 0; j <=  tileWcheck; j++)
-		for (int i = 0; i <= tileHcheck ; i++) {
+	for (int j = 0; j <= tileWcheck; j++)
+		for (int i = 0; i <= tileHcheck; i++) {
 			//TODO: add margin for the black lines top and left
 			SDL_Rect rect;
 			rect.x = j + tile_w;
