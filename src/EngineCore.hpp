@@ -14,6 +14,7 @@
 #include <sstream>
 #include <iostream>
 
+
 #define FPS 50
 #define TILE_W 20
 #define TILE_H 20
@@ -35,7 +36,7 @@ private:
 	EngineCore& operator=(const EngineCore& other);
 
 protected:
-	void generateTilesetResources();
+	void generateTilesetResources(int tileSetWidth, int tileSetHeight);
     void update(int delta);
 	void render();
 	void eventHandling(Input& input);
