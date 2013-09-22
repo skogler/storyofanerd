@@ -50,6 +50,14 @@ EngineCore::EngineCore() :
     // Load player last!
 	mPlayer.reset(new Player(mMap, mAudio, mViewport));
 	mPlayer->loadAnimations(mRenderer);
+
+    mEventgen = new Eventgen(mMap->getObjectGroups());
+    ASSERT(mEventgen);
+    mEventhandler = new EventhandlerMaster();
+    ASSERT(mEventhandler);
+
+    HandlerText texthandler("myeventhandler", NULL, "drawevent");
+    mEventhandler->registerEventhandler("Object Layer 1", "event", texthandler);
 }
 
 EngineCore::~EngineCore() {
@@ -161,6 +169,10 @@ void EngineCore::render() {
 	SDL_RenderCopy(mRenderer, mPlayer->getPlayerImage(), NULL, &dst);
 
 	SDL_RenderPresent(mRenderer);
+
+    //TODO: y fix
+    mEventhandler->triggerHandlers(mEventgen->checkForEvents(mPlayer->getBoundingBox().x, 
+                mViewport.h - (mMap->getTileMap().height * mMap->getTileMap().tileheight)));
 }
 
 ///////////////////////////////////////////////////////////////////////////

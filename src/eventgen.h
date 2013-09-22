@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          eventgen.h
  * Created:       2013-09-21
- * Last modified: 2013-09-22 11:35:48 AM CEST
+ * Last modified: 2013-09-22 04:05:04 PM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -35,6 +35,9 @@
 #define EVENTGEN_H
 
 #include <vector>
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 #include "common.h"
 #include "errorcodes.h"
@@ -87,7 +90,7 @@ class Eventgen
 class Eventhandler
 {
     public:
-        explicit Eventhandler(const string &eventhandlername = "");
+        explicit Eventhandler(const string &eventhandlername = "", SDL_Surface *surface = NULL);
         virtual ~Eventhandler();
 
         //! execute the given event
@@ -107,8 +110,24 @@ class Eventhandler
             return m_eventhandlername < rhs.getName();
         }
 
-    private:
+    protected:
         string m_eventhandlername;
+        SDL_Surface *m_surface;
+};
+
+///////////////////////////////////////////////////////////////////////////
+
+class HandlerText : public Eventhandler
+{
+    public:
+        explicit HandlerText(const string &eventhandlername, SDL_Surface *surface, 
+                             const string &text_to_draw);
+        ~HandlerText();
+
+        ErrorCode executeEvent(const Event &event) const;
+
+    private:
+        string m_text_to_draw;
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -122,6 +141,7 @@ class EventhandlerMaster
         inline void registerEventhandler(const string &groupname, const string &objectname,
                                          const Eventhandler &eventhandler)
         {
+            LogDebug("Registering event handler: " << eventhandler.getName());
             EventName eventname;
             eventname.groupname = groupname;
             eventname.objectname = objectname;
@@ -144,6 +164,7 @@ class EventhandlerMaster
                        it->second.objectname == passed_it->object->name)
                     {
                         LogDebug("Triggering eventhandler: " << it->first.getName());
+                        //TODO: not calling inherited function
                         it->first.executeEvent(*passed_it);
                     }
                 }

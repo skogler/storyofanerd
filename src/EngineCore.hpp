@@ -7,6 +7,7 @@
 #include "Player.h"
 #include "xmlloader.h"
 
+#include "eventgen.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -56,6 +57,8 @@ protected:
 	vector<SDL_Rect> tileClips;
 	short current_clip = 0;
 
+    Eventgen *mEventgen;
+    EventhandlerMaster *mEventhandler;
 };
 
 #endif /* end of include guard: ENGINECORE_HPP */
