@@ -144,47 +144,29 @@ class LoadedMap
         ErrorCode loadFile();
 
         //pass tileset index (0-based)
-        string getImageName(uint tileset) const
+        inline const string& getImageName(uint tileset) const
         {
-            if(tileset > m_tilesets.size())
-            {
-                LogWarning("Trying to access invalid tileset image");
-                return "";
-            }
-
             return m_tilesets.at(tileset).image.source_image;
         }
 
-        TileMap getTileMap() const
+        inline const TileMap& getTileMap() const
         {
         	return m_map;
         }
 
-        vector<Tile> getTileSetVector(uint tileset) const 
+        inline const vector<Tile>& getTileSetVector(uint tileset) const
         {
-            if(tileset > m_tilesets.size())
-            {
-                LogWarning("Trying to access invalid tileset / tiles");
-                return vector<Tile>();
-            }
-
         	return m_tilesets.at(tileset).tiles;
         }
 
         //get data of a layer (0-based)
-        string getLayerData(uint layer) const
+        inline const string& getLayerData(uint layer) const
         {
-            if(layer > m_layers.size())
-            {
-                LogWarning("Trying to access invalid layer");
-                return "";
-            }
-
             return m_layers.at(layer).data;
         }
-        
+
         //this contains boxes for events etc
-        vector<ObjectGroup> getObjectGroups() const
+        inline const vector<ObjectGroup>& getObjectGroups() const
         {
             return m_objectgroups;
         }
