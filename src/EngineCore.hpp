@@ -57,9 +57,6 @@ protected:
 	vector<SDL_Rect> tileClips;
 	short current_clip = 0;
 
-    // should go somewhere else
-    SDL_Texture* mPlayerImage;
-
     Eventgen *mEventgen;
     EventhandlerMaster *mEventhandler;
 };
