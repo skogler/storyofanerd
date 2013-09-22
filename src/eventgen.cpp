@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          eventgen.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-22 07:56:04 AM CEST
+ * Last modified: 2013-09-22 11:37:29 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -96,7 +96,9 @@ vector<Event> Eventgen::checkForEvents(uint x, uint y)
                         sit++)
                     {
                         if(sit->group->name == event.group->name &&
-                           sit->object->name == event.object->name)
+                           sit->object->name == event.object->name &&
+                           sit->object->x == event.object->x &&
+                           sit->object->y == event.object->y)
                         {
                             found = true;
                             break;
@@ -125,4 +127,36 @@ vector<Event> Eventgen::checkForEvents(uint x, uint y)
 
 ///////////////////////////////////////////////////////////////////////////
 
+Eventhandler::Eventhandler(const string &eventhandlername) :
+    m_eventhandlername(eventhandlername)
+{
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+Eventhandler::~Eventhandler()
+{
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+ErrorCode Eventhandler::executeEvent(const Event &event) const
+{
+    LogDebug2("Eventhandler::executeEvent... not doing anything here");
+    return OK;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+EventhandlerMaster::EventhandlerMaster()
+{
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+EventhandlerMaster::~EventhandlerMaster()
+{
+}
+
+///////////////////////////////////////////////////////////////////////////
 

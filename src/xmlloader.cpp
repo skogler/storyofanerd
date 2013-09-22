@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-22 10:14:52 AM CEST
+ * Last modified: 2013-09-22 11:04:36 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -110,7 +110,7 @@ LoadedMap::~LoadedMap()
 
 ErrorCode LoadedMap::loadFile()
 {
-    LogDebug("LoadedMap::loadFile start");
+    LogDebug2("LoadedMap::loadFile start");
     int ret = m_doc.LoadFile(m_filename.c_str());
 
     if(ret != 0)
@@ -141,8 +141,9 @@ ErrorCode LoadedMap::loadFile()
         }
         child = child->NextSiblingElement();
     }
-    LogDebug("LoadedMap::loadFile end");
+    LogDebug2("LoadedMap::loadFile end");
 
+    printMapInformation();
     return OK;
 }
 
@@ -150,7 +151,7 @@ ErrorCode LoadedMap::loadFile()
 
 void LoadedMap::loadMap(XMLElement *element)
 {
-    LogDebug("LoadedMap::loadMap");
+    LogDebug2("LoadedMap::loadMap");
     stringstream width (element->Attribute(XML_MAP_WIDTH.c_str()));
     stringstream height (element->Attribute(XML_MAP_HEIGHT.c_str()));
     stringstream tilewidth (element->Attribute(XML_MAP_TILEWIDTH.c_str()));
@@ -210,7 +211,7 @@ void LoadedMap::loadImageSource(XMLElement *element, TileSet *target)
     ASSERT(element);
     ASSERT(target);
 
-    target->image.source_image = element->Attribute(XML_IMAGE_SOURCE.c_str());
+    target->image.source_image = getAttributeString(element, XML_IMAGE_SOURCE);
 
     stringstream width (element->Attribute(XML_IMAGE_WIDTH.c_str()));
     stringstream height (element->Attribute(XML_IMAGE_HEIGHT.c_str()));
@@ -234,7 +235,7 @@ void LoadedMap::loadTerrains(XMLElement *element, TileSet *target)
     while(terrain != NULL)
     {
         TerrainType parsed_terrain;
-        parsed_terrain.name = terrain->Attribute(XML_TERRAIN_NAME.c_str());
+        parsed_terrain.name = getAttributeString(terrain, XML_TERRAIN_NAME);
 
         stringstream tile (terrain->Attribute(XML_TERRAIN_TILE.c_str()));
         tile >> parsed_terrain.tile;
@@ -267,8 +268,8 @@ void LoadedMap::loadTerrainProperties(XMLElement *element, TerrainType *target)
     while(property != NULL)
     {
         std::pair<string, string> parsed_property;
-        parsed_property.first = property->Attribute(XML_TERRAIN_PROP_NAME.c_str());
-        parsed_property.second= property->Attribute(XML_TERRAIN_PROP_VALUE.c_str());
+        parsed_property.first = getAttributeString(property, XML_TERRAIN_PROP_NAME);
+        parsed_property.second= getAttributeString(property, XML_TERRAIN_PROP_VALUE);
 
         target->properties.insert(parsed_property);
         property = property->NextSiblingElement();
@@ -298,7 +299,7 @@ void LoadedMap::loadTiles(XMLElement *element, TileSet *target)
         element = element->NextSiblingElement();
     }
 
-    LogDebug("LoadedMap::loadTiles: Loaded " << target->tiles.size() << " for " << target->name);
+    LogDebug2("LoadedMap::loadTiles: Loaded " << target->tiles.size() << " for " << target->name);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -355,7 +356,7 @@ void LoadedMap::loadLayer(XMLElement *element)
 
     Layer parsed_layer;
 
-    parsed_layer.name = element->Attribute(XML_LAYER_NAME.c_str());
+    parsed_layer.name = getAttributeString(element, XML_LAYER_NAME);
 
     stringstream width (element->Attribute(XML_LAYER_WIDTH.c_str()));
     stringstream height (element->Attribute(XML_LAYER_HEIGHT.c_str()));
@@ -366,10 +367,10 @@ void LoadedMap::loadLayer(XMLElement *element)
     XMLElement *data = element->FirstChildElement(XML_LAYER_DATA.c_str());
     if(data != NULL)
     {
-        parsed_layer.encoding = data->Attribute(XML_LAYER_DATA_ENCODING.c_str());
+        parsed_layer.encoding = getAttributeString(data, XML_LAYER_DATA_ENCODING);
         if(parsed_layer.encoding != "csv")
         {
-            parsed_layer.compression = data->Attribute(XML_LAYER_DATA_COMPRESSION.c_str());
+            parsed_layer.compression = getAttributeString(data, XML_LAYER_DATA_COMPRESSION);
         }
         parsed_layer.data = data->GetText();
     }
@@ -388,8 +389,8 @@ void LoadedMap::loadObjectGroup(XMLElement *element)
 
     ObjectGroup parsed_group;
 
-    parsed_group.draworder = element->Attribute(XML_OBJECTGROUP_DRAWORDER.c_str());
-    parsed_group.name = element->Attribute(XML_OBJECTGROUP_NAME.c_str());
+    parsed_group.draworder = getAttributeString(element, XML_OBJECTGROUP_DRAWORDER);
+    parsed_group.name = getAttributeString(element, XML_OBJECTGROUP_NAME);
 
     stringstream width (element->Attribute(XML_OBJECTGROUP_WIDTH.c_str()));
     stringstream height (element->Attribute(XML_OBJECTGROUP_HEIGHT.c_str()));
@@ -420,7 +421,7 @@ void LoadedMap::loadObjects(XMLElement *element, ObjectGroup *target)
     {
         Object parsed_object;
 
-        parsed_object.name = element->Attribute(XML_OBJECT_NAME.c_str());
+        parsed_object.name = getAttributeString(element, XML_OBJECT_NAME);
 
         stringstream x (element->Attribute(XML_OBJECT_X.c_str()));
         stringstream y (element->Attribute(XML_OBJECT_Y.c_str()));
@@ -452,8 +453,8 @@ void LoadedMap::loadObjectGroupProperties(XMLElement *element, ObjectGroup *targ
     while(property != NULL)
     {
         std::pair<string, string> parsed_property;
-        parsed_property.first = property->Attribute(XML_OBJECTGROUP_PROP_NAME.c_str());
-        parsed_property.second= property->Attribute(XML_OBJECTGROUP_PROP_VALUE.c_str());
+        parsed_property.first = getAttributeString(property, XML_OBJECTGROUP_PROP_NAME);
+        parsed_property.second= getAttributeString(property, XML_OBJECTGROUP_PROP_VALUE);
 
         target->properties.insert(parsed_property);
         property = property->NextSiblingElement();
@@ -461,3 +462,43 @@ void LoadedMap::loadObjectGroupProperties(XMLElement *element, ObjectGroup *targ
 }
 
 ///////////////////////////////////////////////////////////////////////////
+
+string LoadedMap::getAttributeString(XMLElement *element, const string &attribute_name)
+{
+    ASSERT(element);
+    const char *buffer = element->Attribute(attribute_name.c_str());
+
+    if(buffer != NULL)
+    {
+        return string(buffer);
+    }
+    else
+    {
+        LogWarning("Unable to parse attribute " << attribute_name);
+        return "";
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+void LoadedMap::printMapInformation()
+{
+    LogInfo("=== LoadedMap::printMapInformation start === ");
+    LogInfo("Map stats follow... \n" << 
+            "Filename: " << m_filename << "\n"  << 
+            "Number of tilesets: " << m_tilesets.size() << "\n" << 
+            "Number of layers: " << m_layers.size() << "\n" << 
+            "Number of objectgroups: " << m_objectgroups.size());
+
+    for(uint i = 0; i < m_tilesets.size(); i++)
+    {
+        LogDebug("Tileset information (idx: " << i << "): \n" << 
+                 "Tileset name: " << m_tilesets.at(i).name << "\n" << 
+                 "Number of tiles: " << m_tilesets.at(i).tiles.size() << "\n" << 
+                 "Number of terrains: " << m_tilesets.at(i).terraintypes.size());
+    }
+    LogInfo("=== LoadedMap::printMapInformation end === ");
+}
+
+///////////////////////////////////////////////////////////////////////////
+

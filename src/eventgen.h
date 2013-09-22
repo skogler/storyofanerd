@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          eventgen.h
  * Created:       2013-09-21
- * Last modified: 2013-09-22 07:55:09 AM CEST
+ * Last modified: 2013-09-22 11:35:48 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -44,12 +44,23 @@
 using std::vector;
 
 typedef struct Event Event;
+typedef struct EventName EventName;
+
+///////////////////////////////////////////////////////////////////////////
 
 struct Event
 {
     const ObjectGroup *group;
     const Object *object;
 };
+
+struct EventName
+{
+    string groupname;
+    string objectname;
+};
+
+///////////////////////////////////////////////////////////////////////////
 
 class Eventgen
 {
@@ -69,5 +80,81 @@ class Eventgen
 
         static const string PROPERTY_GROUP_SINGLE_IDENTIFIER;
 };
+
+///////////////////////////////////////////////////////////////////////////
+
+//TODO: add params for drawing to map (SDL_SMTH) etc
+class Eventhandler
+{
+    public:
+        explicit Eventhandler(const string &eventhandlername = "");
+        virtual ~Eventhandler();
+
+        //! execute the given event
+        //  \param event info (x, y drawable etc)
+        //  NOTE: this is const because the map key is const and  i cant be
+        //  bothered to rewrite the handlermaster code or think of a better
+        //  solution... it should still work though
+        virtual ErrorCode executeEvent (const Event &event) const;
+
+        inline const string& getName() const
+        {
+            return m_eventhandlername;
+        }
+
+        inline bool operator< (const Eventhandler &rhs) const
+        {
+            return m_eventhandlername < rhs.getName();
+        }
+
+    private:
+        string m_eventhandlername;
+};
+
+///////////////////////////////////////////////////////////////////////////
+
+class EventhandlerMaster
+{
+    public:
+        explicit EventhandlerMaster();
+        ~EventhandlerMaster();
+
+        inline void registerEventhandler(const string &groupname, const string &objectname,
+                                         const Eventhandler &eventhandler)
+        {
+            EventName eventname;
+            eventname.groupname = groupname;
+            eventname.objectname = objectname;
+
+            std::pair<Eventhandler, EventName> event;
+            event.first = eventhandler;
+            event.second = eventname;
+            m_eventhandlers.insert(event);
+        };
+
+        inline void triggerHandlers(const vector<Event> events)
+        {
+            for(vector<Event>::const_iterator passed_it = events.cbegin();
+                passed_it != events.cend(); passed_it++)
+            {
+                for(map<Eventhandler, EventName>::iterator it = m_eventhandlers.begin();
+                    it != m_eventhandlers.end(); it++)
+                {
+                    if(it->second.groupname == passed_it->group->name &&
+                       it->second.objectname == passed_it->object->name)
+                    {
+                        LogDebug("Triggering eventhandler: " << it->first.getName());
+                        it->first.executeEvent(*passed_it);
+                    }
+                }
+            };
+        };
+
+    private:
+        //TODO: make use of wildcards in the future (eventname vector)
+        map<Eventhandler, EventName> m_eventhandlers;
+};
+
+///////////////////////////////////////////////////////////////////////////
 
 #endif

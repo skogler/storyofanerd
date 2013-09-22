@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.h
  * Created:       2013-09-21
- * Last modified: 2013-09-22 09:51:33 AM CEST
+ * Last modified: 2013-09-22 10:55:23 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -203,6 +203,10 @@ class LoadedMap
         void loadObjectGroup(XMLElement *element);
         void loadObjectGroupProperties(XMLElement *element, ObjectGroup *target);
         void loadObjects(XMLElement *element, ObjectGroup *target);
+
+        string getAttributeString(XMLElement *element, const string &attribute_name);
+
+        void printMapInformation();
 
         string          m_filename;
 
