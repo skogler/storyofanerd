@@ -54,6 +54,7 @@ protected:
 	SDL_Rect mBoundingBox;
     SDL_Rect mOldBoundingBox;
     int mJumpElapsedTime;
+    bool mStandingOnFloor;
 
     void animate();
 
