@@ -18,7 +18,7 @@ class LoadedMap;
 class Player
 {
 public:
-	Player(const std::shared_ptr<LoadedMap>& map, const std::shared_ptr<Audio>& audio);
+	Player(const std::shared_ptr<LoadedMap>& map, const std::shared_ptr<Audio>& audio, const SDL_Rect& viewport);
 	virtual ~Player();
 
     void update(int delta);
@@ -36,6 +36,7 @@ public:
 protected:
     std::shared_ptr<LoadedMap> mMap;
     std::shared_ptr<Audio> mAudio;
+    const SDL_Rect& mViewport;
 
     const float mSpeed;
     const unsigned int mJumpDuration;
@@ -44,6 +45,7 @@ protected:
     PlayerMovementState mMovementState;
 
 	SDL_Rect mBoundingBox;
+    SDL_Rect mOldBoundingBox;
     int mJumpElapsedTime;
 };
 
