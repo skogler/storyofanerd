@@ -186,7 +186,6 @@ void EngineCore::eventHandling(Input& input) {
 void EngineCore::generateTilesetResources(int tileSetWidth, int tileSetHeight) {
 	int tile_w = mMap->getTileMap().tilewidth;
 	int tile_h = mMap->getTileMap().tileheight;
-	std::cout << tile_w << " -  " << tile_h << std::endl;
 
 	int margin = mMap->getTileSetMargin(0);
 	int spacing = mMap->getTileSetSpacing(0);

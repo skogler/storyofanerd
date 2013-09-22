@@ -9,6 +9,8 @@
 enum class PlayerMovementState
 {
 	JUMPING,
+	JUMPING_LEFT,
+	JUMPING_RIGHT,
     RUNNING_LEFT,
     RUNNING_RIGHT,
     STANDING,
@@ -44,8 +46,7 @@ protected:
 
     const float mSpeed;
     const unsigned int mJumpDuration;
-
-    bool mJumping;
+    unsigned int mStandDuration;
     PlayerMovementState mMovementState;
     SDL_Texture* mPlayerImage;
     std::map<PlayerMovementState,SDL_Texture*> animations;
@@ -53,6 +54,10 @@ protected:
 	SDL_Rect mBoundingBox;
     SDL_Rect mOldBoundingBox;
     int mJumpElapsedTime;
+
+    void animate();
+
+
 };
 
 #endif /* PLAYER_H_ */
