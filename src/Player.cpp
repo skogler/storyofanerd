@@ -9,7 +9,7 @@ Player::Player(const std::shared_ptr<LoadedMap>& map,
 		const std::shared_ptr<Audio>& audio, const SDL_Rect& viewport) :
 		mMap(map), mAudio(audio), mViewport(viewport), mSpeed(0.2f), mStandDuration(
 				0), mJumpDuration(400), mMovementState(
-				PlayerMovementState::STANDING) {
+				PlayerMovementState::STANDING), mJumpElapsedTime(mJumpDuration + 1) {
 	mBoundingBox.w = 20;
 	mBoundingBox.h = 20;
 	mBoundingBox.x = mViewport.w / 2 - mBoundingBox.w / 2;
@@ -33,7 +33,7 @@ void Player::update(int delta) {
 			filename << "jump" << index << ".wav";
 			mAudio->playSound(filename.str());
 		}
-		if (mJumpElapsedTime < mJumpDuration) {
+        if (mJumpElapsedTime < mJumpDuration) {
 			mJumpElapsedTime += delta;
 			mBoundingBox.y -= static_cast<int>(delta * mSpeed * 2);
 		}
@@ -67,9 +67,6 @@ void Player::update(int delta) {
 		collisionRect.y += mViewport.h
 				- (mMap->getTileMap().height * mMap->getTileMap().tileheight);
 		if (SDL_HasIntersection(&collisionRect, &mBoundingBox)) {
-			SDL_Rect intersection;
-			SDL_IntersectRect(&mBoundingBox, &collisionRect, &intersection);
-
 			// If coming from above
 			if ((mOldBoundingBox.y + mBoundingBox.h) <= collisionRect.y) {
 				mBoundingBox.y = collisionRect.y - mBoundingBox.h;
@@ -82,16 +79,19 @@ void Player::update(int delta) {
 					mBoundingBox.y = (collisionRect.y + collisionRect.h);
 				}
 			}
-			// If coming from left
-			if ((mOldBoundingBox.x + mBoundingBox.w) <= collisionRect.x) {
-				mBoundingBox.x = collisionRect.x - mBoundingBox.h;
-			} else {
-				// leave x as it is
-				// except when coming from right
-				if (mOldBoundingBox.x > (collisionRect.x + collisionRect.w)) {
-					mBoundingBox.x = (collisionRect.x + collisionRect.w);
-				}
-			}
+            // Still intersects?
+            if (SDL_HasIntersection(&collisionRect, &mBoundingBox)) {
+                // If coming from left
+                if ((mOldBoundingBox.x + mBoundingBox.w) <= collisionRect.x) {
+                    mBoundingBox.x = collisionRect.x - mBoundingBox.h;
+                } else {
+                    // leave x as it is
+                    // except when coming from right
+                    if (mOldBoundingBox.x >= (collisionRect.x + collisionRect.w)) {
+                        mBoundingBox.x = (collisionRect.x + collisionRect.w);
+                    }
+                }
+            }
 		}
 	}
 }
@@ -105,13 +105,18 @@ void Player::moveRight() {
 }
 
 void Player::jump() {
-	if (mMovementState == PlayerMovementState::RUNNING_RIGHT)
-		mMovementState = PlayerMovementState::JUMPING_RIGHT;
-	else if (mMovementState == PlayerMovementState::RUNNING_LEFT)
-		mMovementState = PlayerMovementState::JUMPING_LEFT;
-	else
-		mMovementState = PlayerMovementState::JUMPING;
-
+    switch (mMovementState) {
+        case PlayerMovementState::RUNNING_RIGHT:
+        case PlayerMovementState::JUMPING_RIGHT:
+            mMovementState = PlayerMovementState::JUMPING_RIGHT;
+            break;
+        case PlayerMovementState::RUNNING_LEFT:
+        case PlayerMovementState::JUMPING_LEFT:
+            mMovementState = PlayerMovementState::JUMPING_LEFT;
+            break;
+        default:
+            mMovementState = PlayerMovementState::JUMPING;
+    }
 }
 
 const SDL_Rect& Player::getBoundingBox() {
