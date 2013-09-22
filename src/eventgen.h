@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          eventgen.h
  * Created:       2013-09-21
- * Last modified: 2013-09-21 10:56:16 PM CEST
+ * Last modified: 2013-09-22 07:55:09 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -47,8 +47,8 @@ typedef struct Event Event;
 
 struct Event
 {
-    string      group;
-    string      name;
+    const ObjectGroup *group;
+    const Object *object;
 };
 
 class Eventgen

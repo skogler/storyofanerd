@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          eventgen.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-21 11:08:49 PM CEST
+ * Last modified: 2013-09-22 07:56:04 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -54,7 +54,6 @@ Eventgen::~Eventgen()
 
 vector<Event> Eventgen::checkForEvents(uint x, uint y)
 {
-    //TODO: probably better to return pointers to events?
     vector<Event> to_trigger;
     for(vector<ObjectGroup>::const_iterator git = m_grouped_event_boxes.cbegin();
         git != m_grouped_event_boxes.cend(); git++)
@@ -84,8 +83,8 @@ vector<Event> Eventgen::checkForEvents(uint x, uint y)
             if(oit->x + oit->width < x && oit->y + oit->height < y)
             {
                 Event event;
-                event.group = git->name;
-                event.name = oit->name;
+                event.group = &(*git);
+                event.object = &(*oit);
 
                 /////////////////////////////////
                 if(single)
@@ -96,8 +95,8 @@ vector<Event> Eventgen::checkForEvents(uint x, uint y)
                         sit != m_triggered_single_events.cend();
                         sit++)
                     {
-                        if(sit->group == event.group &&
-                           sit->name == event.name)
+                        if(sit->group->name == event.group->name &&
+                           sit->object->name == event.object->name)
                         {
                             found = true;
                             break;
