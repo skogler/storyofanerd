@@ -48,7 +48,7 @@ EngineCore::EngineCore() :
 	generateTilesetResources(tileSetSurface->w, tileSetSurface->h);
     mMap->calculateCollisionGeometry();
     // Load player last!
-	mPlayer.reset(new Player(mMap, mAudio));
+	mPlayer.reset(new Player(mMap, mAudio, mViewport));
 }
 
 EngineCore::~EngineCore() {
@@ -72,7 +72,7 @@ EngineCore::~EngineCore() {
 void EngineCore::start() {
 	Input input;
 	mAudio->play();
-	mAudio->setSoundEffectVolume(128);
+	mAudio->setSoundEffectVolume(80);
 	mAudio->setMusicVolume(64);
 
 	//FPS variables
@@ -99,8 +99,11 @@ void EngineCore::start() {
 }
 ///////////////////////////////////////////////////////////////////////////
 void EngineCore::update(int delta) {
+    SDL_GetWindowSize(mWindow, &mViewport.w, &mViewport.h);
 	mPlayer->update(delta);
 	mViewport.x = mPlayer->getBoundingBox().x - mViewport.w / 2;
+    backgroundRect.w = mViewport.w;
+    backgroundRect.h = mViewport.h;
 }
 ////////////////////////////////////////////////////////////////////////	///
 
@@ -127,7 +130,7 @@ void EngineCore::render() {
 	int margin = mMap->getTileSetMargin(0);
 	int spacing = mMap->getTileSetSpacing(0);
 	int x_coord = 0;
-	int y_coord = SCREEN_HEIGHT
+	int y_coord = mViewport.h
 			- (mMap->getTileMap().height * mMap->getTileMap().tileheight);
 	int tile_width = mMap->getTileMap().tilewidth;
 	int tiles_in_row = mMap->getTileMap().width;

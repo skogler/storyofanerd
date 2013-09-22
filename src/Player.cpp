@@ -5,18 +5,20 @@
 
 #include <sstream>
 
-Player::Player(const std::shared_ptr<LoadedMap>& map, const std::shared_ptr<Audio>& audio)
+Player::Player(const std::shared_ptr<LoadedMap>& map, const std::shared_ptr<Audio>& audio, const SDL_Rect& viewport)
     : mMap(map)
     , mAudio(audio)
+    , mViewport(viewport)
     , mSpeed(0.3f)
     , mJumpDuration(400)
     , mJumping(false)
     , mMovementState(PlayerMovementState::STANDING)
 {
-	mBoundingBox.x = 320;
-	mBoundingBox.y = 200;
 	mBoundingBox.w = 40;
 	mBoundingBox.h = 40;
+	mBoundingBox.x = mViewport.w / 2 - mBoundingBox.w / 2;
+	//mBoundingBox.y = mViewport.h / 2 - mBoundingBox.h / 2;
+	mBoundingBox.y = 0;
 }
 
 Player::~Player()
@@ -25,6 +27,7 @@ Player::~Player()
 
 void Player::update(int delta)
 {
+    mOldBoundingBox = mBoundingBox;
     if (mJumping) {
         if (mJumpElapsedTime == 0) {
 			int index = random() % 3 + 1;
@@ -40,24 +43,46 @@ void Player::update(int delta)
 
     if (mMovementState == PlayerMovementState::RUNNING_LEFT) {
         mBoundingBox.x -= static_cast<int>(2 * mSpeed * delta);
-        // Clamp
-        if (mBoundingBox.x <= 0) {
-            mBoundingBox.x = 0;
-            mMovementState = PlayerMovementState::STANDING;
-        }
     } else if (mMovementState == PlayerMovementState::RUNNING_RIGHT) {
         mBoundingBox.x += static_cast<int>(2 * mSpeed * delta);
     }
-
+    mMovementState = PlayerMovementState::STANDING;
     // Fall
     mBoundingBox.y += static_cast<int>(mSpeed * delta);
-	if((mBoundingBox.y + mBoundingBox.h) >= 480) {
-        mBoundingBox.y = 480 - mBoundingBox.h;
-        // Reset jump variables once we are back on the ground
-        mJumpElapsedTime = 0;
-        mJumping = false;
+
+    // Check for collision
+    for (auto collisionRect : mMap->getCollisionGeometry()) {
+        //TODO optimize map translation
+        collisionRect.y += mViewport.h - (mMap->getTileMap().height * mMap->getTileMap().tileheight);
+        if (SDL_HasIntersection(&collisionRect, &mBoundingBox)) {
+            SDL_Rect intersection;
+            SDL_IntersectRect(&mBoundingBox, &collisionRect, &intersection);
+
+                // If coming from above
+                if ((mOldBoundingBox.y + mBoundingBox.h) <= collisionRect.y) {
+                    mBoundingBox.y = collisionRect.y - mBoundingBox.h;
+                    // Reset jump variables once we are back on the ground
+                    mJumpElapsedTime = 0;
+                    mJumping = false;
+                } else {
+                    // leave y as it is
+                    // except when coming from below
+                    if (mOldBoundingBox.y >= (collisionRect.y + collisionRect.h)) {
+                        mBoundingBox.y = (collisionRect.y + collisionRect.h);
+                    }
+                }
+                // If coming from left
+                if ((mOldBoundingBox.x + mBoundingBox.w) <= collisionRect.x) {
+                    mBoundingBox.x = collisionRect.x - mBoundingBox.h;
+                } else {
+                    // leave x as it is
+                    // except when coming from right
+                    if (mOldBoundingBox.x > (collisionRect.x + collisionRect.w)) {
+                        mBoundingBox.x = (collisionRect.x + collisionRect.w);
+                    }
+                }
+        }
     }
-    mMovementState = PlayerMovementState::STANDING;
 }
 
 void Player::moveLeft()
