@@ -5,7 +5,7 @@
 EngineCore::EngineCore() :
 		mMainLoopQuit(false), mWindow(nullptr), mRenderer(nullptr), mViewport( {
 				0, 0, SCREEN_WIDTH, SCREEN_HEIGHT }), mPlayer(nullptr), mAudio(
-				nullptr), mPlayerImage(nullptr), backgroundRect( {
+				nullptr), backgroundRect( {
 	0, 0, SCREEN_WIDTH, SCREEN_HEIGHT }) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		throw std::runtime_error("Could not initialize the SDL2 library!");
@@ -32,7 +32,7 @@ EngineCore::EngineCore() :
 
 	// Initialize Audio after SDL
 	mAudio.reset(new Audio());
-	mPlayerImage = IMG_LoadTexture(mRenderer, "../player.png");
+	//mPlayerImage = IMG_LoadTexture(mRenderer, "../player.png");
 
 	//load the mMap | TODO: error handling
 	mMap.reset(new LoadedMap("../res/maps/testmap.tmx"));
@@ -49,14 +49,12 @@ EngineCore::EngineCore() :
     mMap->calculateCollisionGeometry();
     // Load player last!
 	mPlayer.reset(new Player(mMap, mAudio, mViewport));
+	mPlayer->loadAnimations(mRenderer);
 }
 
 EngineCore::~EngineCore() {
 	if (tileSet) {
 		SDL_DestroyTexture(tileSet);
-	}
-	if (mPlayerImage) {
-		SDL_DestroyTexture(mPlayerImage);
 	}
 	if (mRenderer) {
 		SDL_DestroyRenderer(mRenderer);
@@ -108,7 +106,7 @@ void EngineCore::update(int delta) {
 ////////////////////////////////////////////////////////////////////////	///
 
 void EngineCore::render() {
-    SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
+    //SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
 	//Clear screen
 	SDL_RenderClear(mRenderer);
 
@@ -160,7 +158,7 @@ void EngineCore::render() {
 	SDL_Rect dst(mPlayer->getBoundingBox());
 	dst.x -= mViewport.x;
 	dst.y -= mViewport.y;
-	SDL_RenderCopy(mRenderer, mPlayerImage, NULL, &dst);
+	SDL_RenderCopy(mRenderer, mPlayer->getPlayerImage(), NULL, &dst);
 
 	SDL_RenderPresent(mRenderer);
 }

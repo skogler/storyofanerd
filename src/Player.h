@@ -4,12 +4,15 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <memory>
+#include <map>
 
 enum class PlayerMovementState
 {
+	JUMPING,
     RUNNING_LEFT,
     RUNNING_RIGHT,
-    STANDING
+    STANDING,
+    STANDING2
 };
 
 class Audio;
@@ -22,16 +25,17 @@ public:
 	virtual ~Player();
 
     void update(int delta);
-
 	void moveLeft();
 	void moveRight();
 	void jump();
 
 	const SDL_Rect& getBoundingBox();
+    SDL_Texture* getPlayerImage();
 	inline void setBoundingBox(SDL_Rect rect) {
 		mBoundingBox = rect;
 	}
-	SDL_Surface* getPlayerImage();
+	void addAnimation(PlayerMovementState ps,SDL_Texture animation);
+	void loadAnimations(SDL_Renderer* mRenderer);
 
 protected:
     std::shared_ptr<LoadedMap> mMap;
@@ -43,6 +47,8 @@ protected:
 
     bool mJumping;
     PlayerMovementState mMovementState;
+    SDL_Texture* mPlayerImage;
+    std::map<PlayerMovementState,SDL_Texture*> animations;
 
 	SDL_Rect mBoundingBox;
     SDL_Rect mOldBoundingBox;
