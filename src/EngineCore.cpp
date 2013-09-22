@@ -108,7 +108,6 @@ void EngineCore::render() {
 	//Clear screen
 	SDL_RenderClear(mRenderer);
 
-
 	SDL_RenderCopy(mRenderer, background, NULL, &backgroundRect);
 
 	//Parse tile data
