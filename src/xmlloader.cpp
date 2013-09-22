@@ -33,7 +33,9 @@
 
 #include "xmlloader.h"
 
+#include <SDL2/SDL.h>
 #include <sstream>
+#include <cassert>
 
 //monkey monkey
 const string LoadedMap::XML_MAP             = "map";
@@ -232,7 +234,7 @@ void LoadedMap::loadTerrains(XMLElement *element, TileSet *target)
     XMLElement *terrain = element->FirstChildElement(XML_TERRAIN.c_str());
 
     LogDebug2("LoadedMap::loadTerrains: Found first terrain");
-    while(terrain != NULL)
+    while(terrain)
     {
         TerrainType parsed_terrain;
         parsed_terrain.name = getAttributeString(terrain, XML_TERRAIN_NAME);
@@ -241,7 +243,7 @@ void LoadedMap::loadTerrains(XMLElement *element, TileSet *target)
         tile >> parsed_terrain.tile;
 
         XMLElement *properties = terrain->FirstChildElement(XML_TERRAIN_PROPS.c_str());
-        if(properties != NULL)
+        if(properties)
         {
             loadTerrainProperties(properties, &parsed_terrain);
         }
@@ -312,7 +314,7 @@ void LoadedMap::mapTilesToTerrainPointers(string parsed, TileSet *tset, Tile *ta
     ASSERT(target);
 
     std::stringstream ss(parsed);
-    
+
     int parsed_val;
     int cnt = 1;
     while (ss >> parsed_val && cnt <= 4)
@@ -336,7 +338,7 @@ void LoadedMap::mapTilesToTerrainPointers(string parsed, TileSet *tset, Tile *ta
                 LogDebug2("Mapping terraintype 4 to " << target->terrain_4->name);
                 break;
         }
-            
+
         if (ss.peek() == ',')
         {
             ss.ignore();
@@ -502,3 +504,58 @@ void LoadedMap::printMapInformation()
 
 ///////////////////////////////////////////////////////////////////////////
 
+void LoadedMap::calculateCollisionGeometry()
+{
+    std::vector<int> tile_data_ints;
+    std::stringstream ss(m_layers.at(0).data);
+    int vec_index;
+    while (ss >> vec_index)
+    {
+    	tile_data_ints.push_back(vec_index - 1);
+    	if (ss.peek() == ',')
+    		ss.ignore();
+    }
+    assert (tile_data_ints.size() == (m_map.width * m_map.height));
+
+    int x_coord = 0;
+    int y_coord = 0;
+    for (int tile_index : tile_data_ints) {
+        if (tile_index < 0) {
+            //m_collision_geometry.push_back(SDL_Rect{x_coord, y_coord, static_cast<int>(m_map.tilewidth), static_cast<int>(m_map.tileheight)});
+        } else {
+            const Tile& tile = m_tilesets.at(0).tiles.at(tile_index);
+
+            SDL_Rect collisionRect;
+            collisionRect.x = x_coord;
+            collisionRect.y = y_coord;
+            collisionRect.w = m_map.tilewidth/2;
+            collisionRect.h = m_map.tileheight/2;
+            insertCollisionRectForTerrainType(collisionRect, tile.terrain_1);
+            collisionRect.x += collisionRect.w;
+            insertCollisionRectForTerrainType(collisionRect, tile.terrain_2);
+            collisionRect.y += collisionRect.h;
+            collisionRect.x -= collisionRect.w;
+            insertCollisionRectForTerrainType(collisionRect, tile.terrain_3);
+            collisionRect.x += collisionRect.w;
+            insertCollisionRectForTerrainType(collisionRect, tile.terrain_4);
+
+        }
+        x_coord += m_map.tilewidth;
+        if (x_coord >= (m_map.width * m_map.tilewidth)) {
+            x_coord = 0;
+            y_coord += m_map.tileheight;
+        }
+    }
+}
+
+void LoadedMap::insertCollisionRectForTerrainType(const SDL_Rect& collisionRect, TerrainType* ttype)
+{
+    const auto& entry = ttype->properties.find("collision");
+    if (entry != ttype->properties.end()) {
+        if ("1" == entry->second) {
+            m_collision_geometry.push_back(collisionRect);
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////

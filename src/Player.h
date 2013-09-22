@@ -1,9 +1,9 @@
-
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <memory>
 
 enum class PlayerMovementState
 {
@@ -12,10 +12,13 @@ enum class PlayerMovementState
     STANDING
 };
 
+class Audio;
+class LoadedMap;
+
 class Player
 {
 public:
-	Player();
+	Player(const std::shared_ptr<LoadedMap>& map, const std::shared_ptr<Audio>& audio);
 	virtual ~Player();
 
     void update(int delta);
@@ -31,6 +34,9 @@ public:
 	SDL_Surface* getPlayerImage();
 
 protected:
+    std::shared_ptr<LoadedMap> mMap;
+    std::shared_ptr<Audio> mAudio;
+
     const float mSpeed;
     const unsigned int mJumpDuration;
 

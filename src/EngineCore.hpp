@@ -47,9 +47,9 @@ protected:
 	SDL_Renderer* mRenderer;
     SDL_Rect mViewport;
     std::unique_ptr<Player> mPlayer;
-    std::unique_ptr<Audio> mAudio;
+    std::shared_ptr<Audio> mAudio;
 
-	LoadedMap* map;
+    std::shared_ptr<LoadedMap> mMap;
 	SDL_Texture* tileSet;
 	SDL_Texture* background;
 	SDL_Rect backgroundRect;

@@ -32,15 +32,13 @@ EngineCore::EngineCore() :
 
 	// Initialize Audio after SDL
 	mAudio.reset(new Audio());
-	mPlayer.reset(new Player());
 	mPlayerImage = IMG_LoadTexture(mRenderer, "../player.png");
 
-	//load the map | TODO: error handling
-	map = new LoadedMap("../res/maps/testmap.tmx");
-	map->loadFile();
+	//load the mMap | TODO: error handling
+	mMap.reset(new LoadedMap("../res/maps/testmap.tmx"));
+	mMap->loadFile();
 
-	SDL_Surface* tileSetSurface = IMG_Load(
-			("../res/maps/" + map->getImageName(0)).c_str());
+	SDL_Surface* tileSetSurface  = IMG_Load(("../res/maps/" + mMap->getImageName(0)).c_str());
 	tileSet = SDL_CreateTextureFromSurface(mRenderer, tileSetSurface);
 	if (tileSet == nullptr)
 		std::cout << "tilesetLoadfailed" << std::endl;
@@ -48,10 +46,12 @@ EngineCore::EngineCore() :
 	background = IMG_LoadTexture(mRenderer, ("../res/images/background.png"));
 
 	generateTilesetResources(tileSetSurface->w, tileSetSurface->h);
+    mMap->calculateCollisionGeometry();
+    // Load player last!
+	mPlayer.reset(new Player(mMap, mAudio));
 }
 
 EngineCore::~EngineCore() {
-	delete map;
 	if (tileSet) {
 		SDL_DestroyTexture(tileSet);
 	}
@@ -105,13 +105,14 @@ void EngineCore::update(int delta) {
 ////////////////////////////////////////////////////////////////////////	///
 
 void EngineCore::render() {
+    SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
 	//Clear screen
 	SDL_RenderClear(mRenderer);
 
 	SDL_RenderCopy(mRenderer, background, NULL, &backgroundRect);
 
 	//Parse tile data
-	string tile_data = map->getLayerData(0);
+	string tile_data = mMap->getLayerData(0);
 
 	std::vector<int> tile_data_ints;
 	std::stringstream ss(tile_data);
@@ -122,13 +123,13 @@ void EngineCore::render() {
 			ss.ignore();
 	}
 
-	int margin = map->getTileSetMargin(0);
-	int spacing = map->getTileSetSpacing(0);
+	int margin = mMap->getTileSetMargin(0);
+	int spacing = mMap->getTileSetSpacing(0);
 	int x_coord = 0;
 	int y_coord = SCREEN_HEIGHT
-			- (map->getTileMap().height * map->getTileMap().tileheight);
-	int tile_width = map->getTileMap().tilewidth;
-	int tiles_in_row = map->getTileMap().width;
+			- (mMap->getTileMap().height * mMap->getTileMap().tileheight);
+	int tile_width = mMap->getTileMap().tilewidth;
+	int tiles_in_row = mMap->getTileMap().width;
 
 	int space_index = 0;
 	for (std::vector<int>::iterator it = tile_data_ints.begin();
@@ -146,16 +147,18 @@ void EngineCore::render() {
 
 		x_coord += tile_width;
 		if (x_coord == (tiles_in_row * tile_width)) {
-			y_coord += map->getTileMap().tileheight;
+			y_coord += mMap->getTileMap().tileheight;
 			x_coord = 0;
 		}
 		space_index++;
 	}
+    SDL_SetRenderDrawColor(mRenderer, 255, 0, 0, 255);
+    SDL_RenderDrawRects(mRenderer, &(mMap->getCollisionGeometry())[0], mMap->getCollisionGeometry().size());
 
 	//Render mPlayer
 	SDL_Rect dst(mPlayer->getBoundingBox());
-	dst.x -= mViewport.x - dst.w;
-	dst.y -= (mViewport.y - dst.h);
+	dst.x -= mViewport.x;
+	dst.y -= mViewport.y;
 	SDL_RenderCopy(mRenderer, mPlayerImage, NULL, &dst);
 
 	SDL_RenderPresent(mRenderer);
@@ -176,24 +179,20 @@ void EngineCore::eventHandling(Input& input) {
 			mPlayer->moveLeft();
 		}
 		if (action == InputAction::JUMP) {
-			int index = random() % 3 + 1;
-			std::stringstream filename;
-			filename << "jump" << index << ".wav";
-			mAudio->playSound(filename.str());
 			mPlayer->jump();
 		}
 	}
 }
 
 void EngineCore::generateTilesetResources(int tileSetWidth, int tileSetHeight) {
-	int tile_w = map->getTileMap().tilewidth;
-	int tile_h = map->getTileMap().tileheight;
+	int tile_w = mMap->getTileMap().tilewidth;
+	int tile_h = mMap->getTileMap().tileheight;
 	std::cout << tile_w << " -  " << tile_h << std::endl;
 
-	int margin = map->getTileSetMargin(0);
-	int spacing = map->getTileSetSpacing(0);
+	int margin = mMap->getTileSetMargin(0);
+	int spacing = mMap->getTileSetSpacing(0);
 
-	int size = map->getTileSetVector(0).size();
+	int size = mMap->getTileSetVector(0).size();
 
 	int tileWcheck = tileSetWidth / tile_w;
 	int tileHcheck = tileSetHeight / tile_h;
