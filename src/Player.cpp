@@ -23,6 +23,7 @@ Player::~Player() {
 void Player::update(int delta) {
 	animate();
 	mOldBoundingBox = mBoundingBox;
+	//Handle Jump
 	if (mMovementState == PlayerMovementState::JUMPING
 			|| mMovementState == PlayerMovementState::JUMPING_LEFT
 			|| mMovementState == PlayerMovementState::JUMPING_RIGHT) {
@@ -38,6 +39,7 @@ void Player::update(int delta) {
 		}
 	}
 
+	//Change movement states
 	if (mMovementState == PlayerMovementState::RUNNING_LEFT
 			|| mMovementState == PlayerMovementState::JUMPING_LEFT) {
 		mBoundingBox.x -= static_cast<int>(2 * mSpeed * delta);
@@ -150,7 +152,6 @@ void Player::animate() {
 }
 
 void Player::loadAnimations(SDL_Renderer* mRenderer) {
-	//TODO: rework.... urgent...
 	SDL_Texture* anim_tex;
 	anim_tex = IMG_LoadTexture(mRenderer, "../res/animations/jumping.png");
 	animations[PlayerMovementState::JUMPING] = &(*anim_tex);
@@ -163,6 +164,6 @@ void Player::loadAnimations(SDL_Renderer* mRenderer) {
 	anim_tex = IMG_LoadTexture(mRenderer, "../res/animations/standing2.png");
 	animations[PlayerMovementState::STANDING2] = &(*anim_tex);
 
+	//important do not delete without replacemnt
 	mPlayerImage = animations[PlayerMovementState::STANDING];
-
 }
