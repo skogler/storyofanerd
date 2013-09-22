@@ -1,7 +1,14 @@
 #include "Player.h"
 
-Player::Player()
-    : mSpeed(0.3f)
+#include "xmlloader.h"
+#include "Audio.hpp"
+
+#include <sstream>
+
+Player::Player(const std::shared_ptr<LoadedMap>& map, const std::shared_ptr<Audio>& audio)
+    : mMap(map)
+    , mAudio(audio)
+    , mSpeed(0.3f)
     , mJumpDuration(400)
     , mJumping(false)
     , mMovementState(PlayerMovementState::STANDING)
@@ -19,6 +26,12 @@ Player::~Player()
 void Player::update(int delta)
 {
     if (mJumping) {
+        if (mJumpElapsedTime == 0) {
+			int index = random() % 3 + 1;
+			std::stringstream filename;
+			filename << "jump" << index << ".wav";
+			mAudio->playSound(filename.str());
+        }
         if (mJumpElapsedTime < mJumpDuration) {
             mJumpElapsedTime += delta;
             mBoundingBox.y -= static_cast<int>(delta * mSpeed * 2);

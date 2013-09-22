@@ -34,14 +34,14 @@
 #ifndef XMLLOADER_H
 #define XMLLOADER_H
 
-#include <string>
-#include <vector>
-#include <map>
+#include "common.h"
+#include "errorcodes.h"
 
 #include <tinyxml2.h>
 
-#include "common.h"
-#include "errorcodes.h"
+#include <string>
+#include <vector>
+#include <map>
 
 using std::string;
 using std::vector;
@@ -50,6 +50,7 @@ using std::stringstream;
 
 using namespace tinyxml2;
 
+struct SDL_Rect;
 typedef struct TileMap TileMap;
 typedef struct ImageSource ImageSource;
 typedef struct TileSet TileSet;
@@ -142,7 +143,12 @@ class LoadedMap
 
         //! actually load/parse the file
         ErrorCode loadFile();
+        void calculateCollisionGeometry();
 
+        inline const std::vector<SDL_Rect>& getCollisionGeometry() const
+        {
+            return m_collision_geometry;
+        }
         //pass tileset index (0-based)
         inline const string& getImageName(uint tileset) const
         {
@@ -207,6 +213,7 @@ class LoadedMap
         string getAttributeString(XMLElement *element, const string &attribute_name);
 
         void printMapInformation();
+        void insertCollisionRectForTerrainType(const SDL_Rect& collisionRect, TerrainType* ttype);
 
         string          m_filename;
 
@@ -214,6 +221,7 @@ class LoadedMap
         vector<TileSet> m_tilesets;
         vector<Layer>   m_layers;
         vector<ObjectGroup> m_objectgroups;
+        vector<SDL_Rect> m_collision_geometry;
 
         XMLDocument     m_doc;
 

@@ -34,7 +34,7 @@ protected:
     SDL_Event mPolledEvent;
     std::vector<InputAction> mActions;
     std::map<SDL_Keycode, InputAction> mActionMappings;
-    std::map<InputAction, bool> mActionStates;
+    std::map<SDL_Keycode, InputAction> mActionStates;
 };
 
 
@@ -49,14 +49,8 @@ const std::vector<InputAction>& Input::getActions()
         if (mPolledEvent.type == SDL_KEYDOWN || mPolledEvent.type == SDL_KEYUP) {
             const auto& actionMappingIterator = mActionMappings.find(mPolledEvent.key.keysym.sym);
             if (actionMappingIterator != mActionMappings.end()) {
-                const auto& actionStateIterator = mActionStates.find(actionMappingIterator->second);
-                if (actionStateIterator != mActionStates.end()) {
-                    if (mPolledEvent.type == SDL_KEYUP) {
-                        actionStateIterator->second = false;
-                    } else {
-                        actionStateIterator->second = true;
-                    }
-                } else {
+                const auto& actionStateIterator = mActionStates.find(mPolledEvent.key.keysym.sym);
+                if (actionStateIterator == mActionStates.end()) {
                     // If not state cached just add the action
                     if (mPolledEvent.type == SDL_KEYDOWN) {
                         mActions.push_back(actionMappingIterator->second);
@@ -65,10 +59,11 @@ const std::vector<InputAction>& Input::getActions()
             }
         }
     }
+    SDL_PumpEvents();
+    const Uint8* state = SDL_GetKeyboardState(NULL);
     for (const auto& actionState : mActionStates) {
-        if (actionState.second) {
-            mActions.push_back(actionState.first);
-        }
+        if (state[SDL_GetScancodeFromKey(actionState.first)])
+            mActions.push_back(actionState.second);
     }
     return mActions;
 }

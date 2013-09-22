@@ -4,7 +4,11 @@
   <image source="tmw_desert_spacing.png" width="265" height="199"/>
   <terraintypes>
    <terrain name="Desert" tile="29"/>
-   <terrain name="Brick" tile="9"/>
+   <terrain name="Brick" tile="9">
+    <properties>
+     <property name="collision" value="1"/>
+    </properties>
+   </terrain>
    <terrain name="Cobblestone" tile="33"/>
    <terrain name="Dirt" tile="14"/>
   </terraintypes>
