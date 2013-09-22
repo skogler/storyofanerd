@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.h
  * Created:       2013-09-21
- * Last modified: 2013-09-22 07:35:48 AM CEST
+ * Last modified: 2013-09-22 09:51:33 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -178,8 +178,6 @@ class LoadedMap
         {
         	return m_tilesets.at(tileset).tiles;
         }
-
-
 
         //get data of a layer (0-based)
         inline const string& getLayerData(uint layer) const

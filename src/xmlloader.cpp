@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-22 07:36:30 AM CEST
+ * Last modified: 2013-09-22 09:58:46 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -245,6 +245,9 @@ void LoadedMap::loadTerrains(XMLElement *element, TileSet *target)
 
         target->terraintypes.push_back(parsed_terrain);
 
+        LogDebug2("Checking on terraintypes. Size: " << target->terraintypes.size() << 
+                  " Value at last: " << target->terraintypes.back().name);
+
         terrain = terrain->NextSiblingElement();
     }
 }
@@ -288,8 +291,12 @@ void LoadedMap::loadTiles(XMLElement *element, TileSet *target)
         string tile_terrains = element->Attribute(XML_TILE_TERRAIN.c_str());
         mapTilesToTerrainPointers(tile_terrains, target, &parsed_tile);
 
+        target->tiles.push_back(parsed_tile);
+
         element = element->NextSiblingElement();
     }
+
+    LogDebug("LoadedMap::loadTiles: Loaded " << target->tiles.size());
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -311,15 +318,19 @@ void LoadedMap::mapTilesToTerrainPointers(string parsed, TileSet *tset, Tile *ta
         {
             case 1:
                 target->terrain_1 = &tset->terraintypes[parsed_val];
+                LogDebug2("Mapping terraintype 1 to " << target->terrain_1->name);
                 break;
             case 2:
                 target->terrain_2 = &tset->terraintypes[parsed_val];
+                LogDebug2("Mapping terraintype 2 to " << target->terrain_2->name);
                 break;
             case 3:
                 target->terrain_3 = &tset->terraintypes[parsed_val];
+                LogDebug2("Mapping terraintype 3 to " << target->terrain_3->name);
                 break;
             case 4:
                 target->terrain_4 = &tset->terraintypes[parsed_val];
+                LogDebug2("Mapping terraintype 4 to " << target->terrain_4->name);
                 break;
         }
             
