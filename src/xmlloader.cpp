@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-22 10:53:49 AM CEST
+ * Last modified: 2013-09-22 11:04:36 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -110,7 +110,7 @@ LoadedMap::~LoadedMap()
 
 ErrorCode LoadedMap::loadFile()
 {
-    LogDebug("LoadedMap::loadFile start");
+    LogDebug2("LoadedMap::loadFile start");
     int ret = m_doc.LoadFile(m_filename.c_str());
 
     if(ret != 0)
@@ -141,8 +141,9 @@ ErrorCode LoadedMap::loadFile()
         }
         child = child->NextSiblingElement();
     }
-    LogDebug("LoadedMap::loadFile end");
+    LogDebug2("LoadedMap::loadFile end");
 
+    printMapInformation();
     return OK;
 }
 
@@ -150,7 +151,7 @@ ErrorCode LoadedMap::loadFile()
 
 void LoadedMap::loadMap(XMLElement *element)
 {
-    LogDebug("LoadedMap::loadMap");
+    LogDebug2("LoadedMap::loadMap");
     stringstream width (element->Attribute(XML_MAP_WIDTH.c_str()));
     stringstream height (element->Attribute(XML_MAP_HEIGHT.c_str()));
     stringstream tilewidth (element->Attribute(XML_MAP_TILEWIDTH.c_str()));
@@ -298,7 +299,7 @@ void LoadedMap::loadTiles(XMLElement *element, TileSet *target)
         element = element->NextSiblingElement();
     }
 
-    LogDebug("LoadedMap::loadTiles: Loaded " << target->tiles.size() << " for " << target->name);
+    LogDebug2("LoadedMap::loadTiles: Loaded " << target->tiles.size() << " for " << target->name);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -477,4 +478,27 @@ string LoadedMap::getAttributeString(XMLElement *element, const string &attribut
         return "";
     }
 }
+
+///////////////////////////////////////////////////////////////////////////
+
+void LoadedMap::printMapInformation()
+{
+    LogInfo("=== LoadedMap::printMapInformation start === ");
+    LogInfo("Map stats follow... \n" << 
+            "Filename: " << m_filename << "\n"  << 
+            "Number of tilesets: " << m_tilesets.size() << "\n" << 
+            "Number of layers: " << m_layers.size() << "\n" << 
+            "Number of objectgroups: " << m_objectgroups.size());
+
+    for(uint i = 0; i < m_tilesets.size(); i++)
+    {
+        LogDebug("Tileset information (idx: " << i << "): \n" << 
+                 "Tileset name: " << m_tilesets.at(i).name << "\n" << 
+                 "Number of tiles: " << m_tilesets.at(i).tiles.size() << "\n" << 
+                 "Number of terrains: " << m_tilesets.at(i).terraintypes.size());
+    }
+    LogInfo("=== LoadedMap::printMapInformation end === ");
+}
+
+///////////////////////////////////////////////////////////////////////////
 
