@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.h
  * Created:       2013-09-21
- * Last modified: 2013-09-21 10:46:26 PM CEST
+ * Last modified: 2013-09-22 07:35:48 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -43,7 +43,11 @@
 #include "common.h"
 #include "errorcodes.h"
 
-using namespace std;
+using std::string;
+using std::vector;
+using std::map;
+using std::stringstream;
+
 using namespace tinyxml2;
 
 typedef struct TileMap TileMap;
@@ -136,11 +140,15 @@ class LoadedMap
         explicit LoadedMap(const string &filename);
         ~LoadedMap();
 
+        //! actually load/parse the file
+        ErrorCode loadFile();
+
         //pass tileset index (0-based)
         string getImageName(uint tileset) const
         {
             if(tileset > m_tilesets.size())
             {
+                LogWarning("Trying to access invalid tileset image");
                 return "";
             }
 
@@ -152,7 +160,14 @@ class LoadedMap
         	return m_map;
         }
 
-        vector<Tile> getTileSetVector(uint tileset) const {
+        vector<Tile> getTileSetVector(uint tileset) const 
+        {
+            if(tileset > m_tilesets.size())
+            {
+                LogWarning("Trying to access invalid tileset / tiles");
+                return vector<Tile>();
+            }
+
         	return m_tilesets.at(tileset).tiles;
         }
 
@@ -161,6 +176,7 @@ class LoadedMap
         {
             if(layer > m_layers.size())
             {
+                LogWarning("Trying to access invalid layer");
                 return "";
             }
 
@@ -174,8 +190,6 @@ class LoadedMap
         }
 
     private:
-        //TODO: error handling (maybe...)
-        void loadFile();
         void loadMap(XMLElement *element);
         void loadTileset(XMLElement *element);
         void loadImageSource(XMLElement *element, TileSet *target);
@@ -253,6 +267,8 @@ class LoadedMap
         static const string XML_OBJECT_Y;
         static const string XML_OBJECT_WIDTH;
         static const string XML_OBJECT_HEIGHT;
+
+        DISABLECOPY(LoadedMap);
 };
 
 #endif
