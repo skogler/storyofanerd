@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          eventgen.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-22 04:00:39 PM CEST
+ * Last modified: 2013-09-23 11:39:28 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -55,7 +55,7 @@ Eventgen::~Eventgen()
 vector<Event> Eventgen::checkForEvents(uint x, uint y)
 {
     //TODO: remove
-    y = 10;
+    //y = 10;
 
     LogDebug("Checking events for x/y: " << x << "/" << y);
     vector<Event> to_trigger;
@@ -67,10 +67,11 @@ vector<Event> Eventgen::checkForEvents(uint x, uint y)
         //check if the group has the "single" property
         bool single = false;
         map<string, string>::const_iterator pip = 
-            git->properties.find("PROPERTY_GROUP_SINGLE_IDENTIFIER");
+            git->properties.find(PROPERTY_GROUP_SINGLE_IDENTIFIER);
 
         if(pip != git->properties.end() && pip->second == "true")
         {
+            LogDebug("Found single identifier for object group...");
             single = true;
         }
         /////////////////////////////////
@@ -148,10 +149,10 @@ Eventhandler::~Eventhandler()
 
 ///////////////////////////////////////////////////////////////////////////
 
-ErrorCode Eventhandler::executeEvent(const Event &event) const
+SDL_Surface* Eventhandler::executeEvent(const Event &event)
 {
     LogDebug("Eventhandler::executeEvent... not doing anything here");
-    return OK;
+    return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -171,10 +172,11 @@ HandlerText::~HandlerText()
 
 ///////////////////////////////////////////////////////////////////////////
 
-ErrorCode HandlerText::executeEvent(const Event &event) const
+SDL_Surface* HandlerText::executeEvent(const Event &event)
 {
     LogInfo("Executing Event! Success!");
-    return OK;
+    SDL_Surface *bmp = SDL_LoadBMP("../res/images/event.bmp");
+    return bmp;
 };
 
 ///////////////////////////////////////////////////////////////////////////

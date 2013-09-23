@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          xmlloader.cpp
  * Created:       2013-09-21
- * Last modified: 2013-09-22 11:04:36 AM CEST
+ * Last modified: 2013-09-23 11:35:57 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -498,6 +498,13 @@ void LoadedMap::printMapInformation()
                  "Tileset name: " << m_tilesets.at(i).name << "\n" << 
                  "Number of tiles: " << m_tilesets.at(i).tiles.size() << "\n" << 
                  "Number of terrains: " << m_tilesets.at(i).terraintypes.size());
+    }
+
+    for(uint i = 0; i < m_objectgroups.size(); i++)
+    {
+        LogDebug("Objectgroup information (idx: " << i << "): \n" << 
+                 "Objectgroup name: " << m_objectgroups.at(i).name << "\n" <<
+                 "Number of properties: " << m_objectgroups.at(i).properties.size());
     }
     LogInfo("=== LoadedMap::printMapInformation end === ");
 }
