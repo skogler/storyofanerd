@@ -58,10 +58,11 @@ EngineCore::EngineCore() :
 	mPlayer.reset(new Player(mMap, mAudio, mViewport));
 	mPlayer->loadAnimations(mRenderer);
 
-	mEventgen = new Eventgen(mMap->getObjectGroups());
-	ASSERT(mEventgen);
-	mEventhandler = new EventhandlerMaster();
-	ASSERT(mEventhandler);
+
+    mEventgen = new Eventgen(mMap->getObjectGroups(), mViewport, mPlayer->getBoundingBox(), mMap);
+    ASSERT(mEventgen);
+    mEventhandler = new EventhandlerMaster();
+    ASSERT(mEventhandler);
 
 	HandlerText* texthandler = new HandlerText("myeventhandler", NULL,
 			"drawevent");
@@ -98,6 +99,7 @@ void EngineCore::start() {
 	while (!mMainLoopQuit) {
 		eventHandling(input);
 		update(delta);
+        mEventhandler->triggerHandlers(mEventgen->checkForEvents());
 		render();
 
 		//FPS code
@@ -180,21 +182,17 @@ void EngineCore::render() {
 	dst.y -= mViewport.y;
 	SDL_RenderCopy(mRenderer, mPlayer->getPlayerImage(), NULL, &dst);
 
-	SDL_RenderPresent(mRenderer);
+    for(uint i = 0; i < mEventhandler->getSurfaces().size(); i++)
+    {
+        SDL_Texture *tex = SDL_CreateTextureFromSurface(mRenderer, mEventhandler->getSurfaces().at(i));
+        SDL_RenderCopy(mRenderer, tex, NULL, NULL);
+        SDL_DestroyTexture(tex);
+    }
 
-	//TODO: y fix
-	mEventhandler->triggerHandlers(
-			mEventgen->checkForEvents(mPlayer->getBoundingBox().x,
-					mPlayer->getBoundingBox().y));
+    SDL_SetRenderTarget(mRenderer, NULL);
+    SDL_RenderCopy(mRenderer, bufferTex, NULL, NULL);
+    SDL_RenderPresent(mRenderer);
 
-	for (uint i = 0; i < mEventhandler->getSurfaces().size(); i++) {
-		SDL_Texture *tex = SDL_CreateTextureFromSurface(mRenderer,
-				mEventhandler->getSurfaces().at(i));
-		SDL_RenderCopy(mRenderer, tex, NULL, NULL);
-	}
-
-	SDL_SetRenderTarget(mRenderer, NULL);
-	SDL_RenderCopy(mRenderer, bufferTex, NULL, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////
