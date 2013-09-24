@@ -32,13 +32,18 @@
  *-----------------------------------------------------------------------*/
 
 #include "eventgen.h"
+#include <SDL2/SDL.h>
+#include <algorithm>
 
 const string Eventgen::PROPERTY_GROUP_SINGLE_IDENTIFIER = "single";
 
 ///////////////////////////////////////////////////////////////////////////
 
-Eventgen::Eventgen(const vector<ObjectGroup> grouped_event_boxes) :
-    m_grouped_event_boxes(grouped_event_boxes)
+Eventgen::Eventgen(const vector<ObjectGroup> grouped_event_boxes, const SDL_Rect& viewport, const SDL_Rect& player, std::shared_ptr<LoadedMap>& map)
+    : m_grouped_event_boxes(grouped_event_boxes)
+    , mViewport(viewport)
+    , mPlayerBoundingBox(player)
+    , mMap(map)
 {
     LogDebug2("Constructed eventgen");
 }
@@ -47,75 +52,44 @@ Eventgen::Eventgen(const vector<ObjectGroup> grouped_event_boxes) :
 
 Eventgen::~Eventgen()
 {
-    LogDebug2("Destoryed eventgen");
+    LogDebug2("Destroyed eventgen");
 }
 
 ///////////////////////////////////////////////////////////////////////////
 
-vector<Event> Eventgen::checkForEvents(uint x, uint y)
+vector<Event> Eventgen::checkForEvents()
 {
-    //TODO: remove
-    //y = 10;
-
-    LogDebug("Checking events for x/y: " << x << "/" << y);
     vector<Event> to_trigger;
 
-    for(vector<ObjectGroup>::const_iterator git = m_grouped_event_boxes.cbegin();
-        git != m_grouped_event_boxes.cend(); git++)
+    for(const auto& group : m_grouped_event_boxes)
     {
         /////////////////////////////////
         //check if the group has the "single" property
         bool single = false;
-        map<string, string>::const_iterator pip = 
-            git->properties.find(PROPERTY_GROUP_SINGLE_IDENTIFIER);
+        map<string, string>::const_iterator pip = group.properties.find(PROPERTY_GROUP_SINGLE_IDENTIFIER);
 
-        if(pip != git->properties.end() && pip->second == "true")
+        if(pip != group.properties.end() && pip->second == "true")
         {
-            LogDebug("Found single identifier for object group...");
             single = true;
         }
-        /////////////////////////////////
 
-        for(vector<Object>::const_iterator oit = git->objects.cbegin();
-            oit != git->objects.cend(); oit++)
+        for (const auto& object : group.objects)
         {
-            //did not reach point yet
-            if(x < oit->x || y < oit->y)
+            //TODO: optimize map translation
+            SDL_Rect objectBoundingBox(object.bbox);
+            objectBoundingBox.y += mViewport.h - (mMap->getTileMap().height * mMap->getTileMap().tileheight);
+            if (SDL_HasIntersection(&objectBoundingBox, &mPlayerBoundingBox))
             {
-                LogDebug("Did not reach x/y points for " << oit->name << "(" << oit->x << "/" << oit->y << ")");
-                continue;
-            }
-
-            //check if within checkbox (assuming we crossed x/y border)
-            if(x < oit->x + oit->width && y < oit->y + oit->height)
-            {
-                LogDebug("Within checkbox of event " << oit->name);
                 Event event;
-                event.group = &(*git);
-                event.object = &(*oit);
+                event.groupname = group.name;
+                event.objectname = object.name;
 
-                /////////////////////////////////
                 if(single)
                 {
-                    bool found = false;
-                    for(vector<Event>::const_iterator sit =
-                        m_triggered_single_events.cbegin();
-                        sit != m_triggered_single_events.cend();
-                        sit++)
+                    auto singleIterator = std::find(m_triggered_single_events.begin(), m_triggered_single_events.end(), event);
+                    if(singleIterator != m_triggered_single_events.end())
                     {
-                        if(sit->group->name == event.group->name &&
-                           sit->object->name == event.object->name &&
-                           sit->object->x == event.object->x &&
-                           sit->object->y == event.object->y)
-                        {
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if(found)
-                    {
-                        LogDebug("Not triggering single event again");
+                        LogDebug("Not triggering single event again: " << object.name);
                         continue;
                     }
                     else
@@ -123,14 +97,12 @@ vector<Event> Eventgen::checkForEvents(uint x, uint y)
                         m_triggered_single_events.push_back(event);
                     }
                 }
-                /////////////////////////////////
-                
+                LogDebug("Triggering event for object: " << object.name);
                 to_trigger.push_back(event);
             }
         }
     }
 
-    LogDebug("Triggering " << to_trigger.size() << " events");
     return to_trigger;
 }
 

@@ -38,6 +38,7 @@
 #include "errorcodes.h"
 
 #include <tinyxml2.h>
+#include <SDL2/SDL.h>
 
 #include <string>
 #include <vector>
@@ -129,10 +130,7 @@ struct ObjectGroup
 struct Object
 {
     string      name;
-    uint        x;
-    uint        y;
-    uint        width;
-    uint        height;
+    SDL_Rect    bbox;
 };
 
 class LoadedMap

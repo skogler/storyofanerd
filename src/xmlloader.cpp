@@ -431,11 +431,11 @@ void LoadedMap::loadObjects(XMLElement *element, ObjectGroup *target)
         stringstream width (element->Attribute(XML_OBJECT_WIDTH.c_str()));
         stringstream height (element->Attribute(XML_OBJECT_HEIGHT.c_str()));
 
-        x >> parsed_object.x;
-        y >> parsed_object.y;
+        x >> parsed_object.bbox.x;
+        y >> parsed_object.bbox.y;
 
-        width >> parsed_object.width;
-        width >> parsed_object.height;
+        width >> parsed_object.bbox.w;
+        height >> parsed_object.bbox.h;
 
         target->objects.push_back(parsed_object);
         element = element ->NextSiblingElement();

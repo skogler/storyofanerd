@@ -35,6 +35,7 @@
 #define EVENTGEN_H
 
 #include <vector>
+#include <memory>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -56,8 +57,14 @@ class Eventhandler;
 
 struct Event
 {
-    const ObjectGroup *group;
-    const Object *object;
+    string groupname;
+    string objectname;
+    bool operator== (const Event& other) {
+        if (groupname != other.groupname || objectname != other.objectname) {
+            return false;
+        }
+        return true;
+    }
 };
 
 struct EventName
@@ -77,17 +84,19 @@ struct EventAssociation
 class Eventgen
 {
     public:
-        explicit Eventgen(const vector<ObjectGroup> grouped_event_boxes);
+        explicit Eventgen(const vector<ObjectGroup> grouped_event_boxes, const SDL_Rect& viewport, const SDL_Rect& player, std::shared_ptr<LoadedMap>& map);
         ~Eventgen();
 
-        vector<Event> checkForEvents(uint x, uint y);
+        vector<Event> checkForEvents();
 
-    private:
+    protected:
         vector<ObjectGroup> m_grouped_event_boxes;
+        const SDL_Rect& mViewport;
+        const SDL_Rect& mPlayerBoundingBox;
+        std::shared_ptr<LoadedMap> mMap;
 
         //! Keep a list of already triggered events if the single property
         //  is true to avoid multiple triggering of certain events
-        //  TODO -- add property parsing in xmlloader and checking here
         vector<Event>       m_triggered_single_events;
 
         static const string PROPERTY_GROUP_SINGLE_IDENTIFIER;
@@ -168,8 +177,8 @@ class EventhandlerMaster
                 for(vector<EventAssociation>::iterator it = m_eventhandlers.begin();
                     it != m_eventhandlers.end(); it++)
                 {
-                    if(it->event.groupname == passed_it->group->name &&
-                       it->event.objectname == passed_it->object->name)
+                    if(it->event.groupname == passed_it->groupname &&
+                       it->event.objectname == passed_it->objectname)
                     {
                         LogDebug("Triggering eventhandler: " << it->eventhandler->getName());
                         SDL_Surface* to_draw = it->eventhandler->executeEvent(*passed_it);
