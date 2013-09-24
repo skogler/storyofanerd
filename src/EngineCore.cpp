@@ -12,12 +12,14 @@ EngineCore::EngineCore() :
 	}
 
 	mWindow = SDL_CreateWindow("Game", SDL_WINDOWPOS_CENTERED,
-	SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE);
+	SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN );
 	if (!mWindow) {
 		std::stringstream ss("Error opening window: ");
 		ss << SDL_GetError();
 		throw std::runtime_error(ss.str());
 	}
+
+	mWindowTexture = SDL_CreateTexture(mRenderer,	SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	mRenderer = SDL_CreateRenderer(mWindow, -1,
 			SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -38,14 +40,16 @@ EngineCore::EngineCore() :
 	mMap.reset(new LoadedMap("../res/maps/testmap.tmx"));
 	mMap->loadFile();
 
-	SDL_Surface* tileSetSurface  = IMG_Load(("../res/maps/" + mMap->getImageName(0)).c_str());
-	tileSet = SDL_CreateTextureFromSurface(mRenderer, tileSetSurface);
+	SDL_Surface* tileSet  = IMG_Load(("../res/maps/" + mMap->getImageName(0)).c_str());
+	// tileSet = SDL_CreateTextureFromSurface(mRenderer, tileSetSurface);
 	if (tileSet == nullptr)
 		std::cout << "tilesetLoadfailed" << std::endl;
 
-	background = IMG_LoadTexture(mRenderer, ("../res/images/background.png"));
+	background = IMG_Load(mRenderer, ("../res/images/background.png"));
 
-	generateTilesetResources(tileSetSurface->w, tileSetSurface->h);
+	//generateTilesetResources(tileSetSurface->w, tileSetSurface->h);
+	generateTilesetResources(tileSet->w, tileSet->h);
+
     mMap->calculateCollisionGeometry();
     // Load player last!
 	mPlayer.reset(new Player(mMap, mAudio, mViewport));
@@ -56,14 +60,15 @@ EngineCore::EngineCore() :
     mEventhandler = new EventhandlerMaster();
     ASSERT(mEventhandler);
 
+
     HandlerText* texthandler = new HandlerText("myeventhandler", NULL, "drawevent");
     mEventhandler->registerEventhandler("Object Layer 1", "event", texthandler);
 }
 
 EngineCore::~EngineCore() {
-	if (tileSet) {
-		SDL_DestroyTexture(tileSet);
-	}
+	//if (tileSet) {
+	//	SDL_DestroyTexture(tileSet);
+	//}
 	if (mRenderer) {
 		SDL_DestroyRenderer(mRenderer);
 	}
@@ -118,7 +123,9 @@ void EngineCore::render() {
 	//Clear screen
 	SDL_RenderClear(mRenderer);
 
-	SDL_RenderCopy(mRenderer, background, NULL, &backgroundRect);
+	//SDL_RenderCopy(mRenderer, background, NULL, &backgroundRect);
+    SDL_UpdateTexture(mWindowTexture, NULL, background->pixels, 640 * sizeof (Uint32));
+
 
 	//Parse tile data
 	string tile_data = mMap->getLayerData(0);
@@ -151,8 +158,10 @@ void EngineCore::render() {
 		dst.h = tileClips.at(current_clip).h;
 
 		if (current_clip != 0)
-			SDL_RenderCopy(mRenderer, tileSet, &(tileClips.at(current_clip)),
-					&dst);
+		    SDL_UpdateTexture(mWindowTexture, NULL, background->pixels, 640 * sizeof (Uint32));
+
+			//SDL_RenderCopy(mRenderer, tileSet, (&(tileClips.at(current_clip))),
+			//		&dst);
 
 		x_coord += tile_width;
 		if (x_coord == (tiles_in_row * tile_width)) {
@@ -180,6 +189,12 @@ void EngineCore::render() {
         SDL_RenderCopy(mRenderer, tex, NULL, NULL);
         SDL_RenderPresent(mRenderer);
     }
+
+    SDL_UpdateTexture(mWindowTexture, NULL, background->pixels, 640 * sizeof (Uint32));
+
+
+    SDL_RenderCopy(mRenderer, mWindowTexture, NULL, NULL);
+    SDL_RenderPresent(mRenderer);
 }
 
 ///////////////////////////////////////////////////////////////////////////

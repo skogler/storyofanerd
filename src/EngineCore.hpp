@@ -46,13 +46,19 @@ protected:
 	bool mMainLoopQuit;
 	SDL_Window* mWindow;
 	SDL_Renderer* mRenderer;
+	SDL_Texture* mWindowTexture;
     SDL_Rect mViewport;
     std::unique_ptr<Player> mPlayer;
     std::shared_ptr<Audio> mAudio;
 
     std::shared_ptr<LoadedMap> mMap;
-	SDL_Texture* tileSet;
-	SDL_Texture* background;
+	//SDL_Texture* tileSet;
+	//SDL_Texture* background;
+
+	SDL_Surface* tileSet;
+	SDL_Surface* background;
+
+
 	SDL_Rect backgroundRect;
 	vector<SDL_Rect> tileClips;
 	short current_clip = 0;
