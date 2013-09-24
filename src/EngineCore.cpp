@@ -5,21 +5,18 @@
 EngineCore::EngineCore() :
 		mMainLoopQuit(false), mWindow(nullptr), mRenderer(nullptr), mViewport( {
 				0, 0, SCREEN_WIDTH, SCREEN_HEIGHT }), mPlayer(nullptr), mAudio(
-				nullptr), backgroundRect( {
-	0, 0, SCREEN_WIDTH, SCREEN_HEIGHT }) {
+				nullptr), backgroundRect( { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT }) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		throw std::runtime_error("Could not initialize the SDL2 library!");
 	}
 
 	mWindow = SDL_CreateWindow("Game", SDL_WINDOWPOS_CENTERED,
-	SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN );
+	SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE);
 	if (!mWindow) {
 		std::stringstream ss("Error opening window: ");
 		ss << SDL_GetError();
 		throw std::runtime_error(ss.str());
 	}
-
-	mWindowTexture = SDL_CreateTexture(mRenderer,	SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	mRenderer = SDL_CreateRenderer(mWindow, -1,
 			SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -32,6 +29,11 @@ EngineCore::EngineCore() :
 	SDL_ShowCursor(SDL_DISABLE);
 	SDL_SetRenderDrawColor(mRenderer, 0xF0, 0xF0, 0xF0, 0xF0);
 
+	// The future render target
+	bufferTex = SDL_CreateTexture(mRenderer, SDL_PIXELFORMAT_ARGB8888,
+			SDL_TEXTUREACCESS_TARGET,
+			SCREEN_WIDTH, SCREEN_HEIGHT);
+
 	// Initialize Audio after SDL
 	mAudio.reset(new Audio());
 	//mPlayerImage = IMG_LoadTexture(mRenderer, "../player.png");
@@ -40,35 +42,36 @@ EngineCore::EngineCore() :
 	mMap.reset(new LoadedMap("../res/maps/testmap.tmx"));
 	mMap->loadFile();
 
-	SDL_Surface* tileSet  = IMG_Load(("../res/maps/" + mMap->getImageName(0)).c_str());
-	// tileSet = SDL_CreateTextureFromSurface(mRenderer, tileSetSurface);
+	SDL_Surface* tileSetSurface = IMG_Load(
+			("../res/maps/" + mMap->getImageName(0)).c_str());
+	tileSet = SDL_CreateTextureFromSurface(mRenderer, tileSetSurface);
 	if (tileSet == nullptr)
 		std::cout << "tilesetLoadfailed" << std::endl;
 
-	background = IMG_Load(mRenderer, ("../res/images/background.png"));
+	background = IMG_LoadTexture(mRenderer, ("../res/images/background.png"));
 
 	//generateTilesetResources(tileSetSurface->w, tileSetSurface->h);
-	generateTilesetResources(tileSet->w, tileSet->h);
+	generateTilesetResources(tileSetSurface->w, tileSetSurface->h);
 
-    mMap->calculateCollisionGeometry();
-    // Load player last!
+	mMap->calculateCollisionGeometry();
+	// Load player last!
 	mPlayer.reset(new Player(mMap, mAudio, mViewport));
 	mPlayer->loadAnimations(mRenderer);
 
-    mEventgen = new Eventgen(mMap->getObjectGroups());
-    ASSERT(mEventgen);
-    mEventhandler = new EventhandlerMaster();
-    ASSERT(mEventhandler);
+	mEventgen = new Eventgen(mMap->getObjectGroups());
+	ASSERT(mEventgen);
+	mEventhandler = new EventhandlerMaster();
+	ASSERT(mEventhandler);
 
-
-    HandlerText* texthandler = new HandlerText("myeventhandler", NULL, "drawevent");
-    mEventhandler->registerEventhandler("Object Layer 1", "event", texthandler);
+	HandlerText* texthandler = new HandlerText("myeventhandler", NULL,
+			"drawevent");
+	mEventhandler->registerEventhandler("Object Layer 1", "event", texthandler);
 }
 
 EngineCore::~EngineCore() {
-	//if (tileSet) {
-	//	SDL_DestroyTexture(tileSet);
-	//}
+	if (tileSet) {
+		SDL_DestroyTexture(tileSet);
+	}
 	if (mRenderer) {
 		SDL_DestroyRenderer(mRenderer);
 	}
@@ -110,21 +113,23 @@ void EngineCore::start() {
 }
 ///////////////////////////////////////////////////////////////////////////
 void EngineCore::update(int delta) {
-    SDL_GetWindowSize(mWindow, &mViewport.w, &mViewport.h);
+	SDL_GetWindowSize(mWindow, &mViewport.w, &mViewport.h);
 	mPlayer->update(delta);
 	mViewport.x = mPlayer->getBoundingBox().x - mViewport.w / 2;
-    backgroundRect.w = mViewport.w;
-    backgroundRect.h = mViewport.h;
+	backgroundRect.w = mViewport.w;
+	backgroundRect.h = mViewport.h;
 }
 ////////////////////////////////////////////////////////////////////////	///
 
 void EngineCore::render() {
-    //SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
+	//SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
 	//Clear screen
 	SDL_RenderClear(mRenderer);
+	SDL_SetRenderTarget(mRenderer,bufferTex);
+	SDL_RenderClear(mRenderer);
 
-	//SDL_RenderCopy(mRenderer, background, NULL, &backgroundRect);
-    SDL_UpdateTexture(mWindowTexture, NULL, background->pixels, 640 * sizeof (Uint32));
+
+	SDL_RenderCopy(mRenderer, background, NULL, &backgroundRect);
 
 
 	//Parse tile data
@@ -158,10 +163,8 @@ void EngineCore::render() {
 		dst.h = tileClips.at(current_clip).h;
 
 		if (current_clip != 0)
-		    SDL_UpdateTexture(mWindowTexture, NULL, background->pixels, 640 * sizeof (Uint32));
-
-			//SDL_RenderCopy(mRenderer, tileSet, (&(tileClips.at(current_clip))),
-			//		&dst);
+			SDL_RenderCopy(mRenderer, tileSet, (&(tileClips.at(current_clip))),
+					&dst);
 
 		x_coord += tile_width;
 		if (x_coord == (tiles_in_row * tile_width)) {
@@ -179,22 +182,19 @@ void EngineCore::render() {
 
 	SDL_RenderPresent(mRenderer);
 
-    //TODO: y fix
-    mEventhandler->triggerHandlers(mEventgen->checkForEvents(mPlayer->getBoundingBox().x,
-                                    mPlayer->getBoundingBox().y));
+	//TODO: y fix
+	mEventhandler->triggerHandlers(
+			mEventgen->checkForEvents(mPlayer->getBoundingBox().x,
+					mPlayer->getBoundingBox().y));
 
-    for(uint i = 0; i < mEventhandler->getSurfaces().size(); i++)
-    {
-        SDL_Texture *tex = SDL_CreateTextureFromSurface(mRenderer, mEventhandler->getSurfaces().at(i));
-        SDL_RenderCopy(mRenderer, tex, NULL, NULL);
-        SDL_RenderPresent(mRenderer);
-    }
+	for (uint i = 0; i < mEventhandler->getSurfaces().size(); i++) {
+		SDL_Texture *tex = SDL_CreateTextureFromSurface(mRenderer,
+				mEventhandler->getSurfaces().at(i));
+		SDL_RenderCopy(mRenderer, tex, NULL, NULL);
+	}
 
-    SDL_UpdateTexture(mWindowTexture, NULL, background->pixels, 640 * sizeof (Uint32));
-
-
-    SDL_RenderCopy(mRenderer, mWindowTexture, NULL, NULL);
-    SDL_RenderPresent(mRenderer);
+	SDL_SetRenderTarget(mRenderer, NULL);
+	SDL_RenderCopy(mRenderer, bufferTex, NULL, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////
