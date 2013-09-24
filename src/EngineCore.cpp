@@ -11,7 +11,7 @@ EngineCore::EngineCore() :
 	}
 
 	mWindow = SDL_CreateWindow("Game", SDL_WINDOWPOS_CENTERED,
-	SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE);
+	SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 	if (!mWindow) {
 		std::stringstream ss("Error opening window: ");
 		ss << SDL_GetError();
@@ -124,7 +124,6 @@ void EngineCore::update(int delta) {
 ////////////////////////////////////////////////////////////////////////	///
 
 void EngineCore::render() {
-	//SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
 	//Clear screen
 	SDL_RenderClear(mRenderer);
 	SDL_SetRenderTarget(mRenderer,bufferTex);
@@ -188,9 +187,8 @@ void EngineCore::render() {
         SDL_RenderCopy(mRenderer, tex, NULL, NULL);
         SDL_DestroyTexture(tex);
     }
-
     SDL_SetRenderTarget(mRenderer, NULL);
-    SDL_RenderCopy(mRenderer, bufferTex, NULL, NULL);
+    SDL_RenderCopy(mRenderer, bufferTex, NULL, &backgroundRect);
     SDL_RenderPresent(mRenderer);
 
 }

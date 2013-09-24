@@ -6,6 +6,7 @@
 #include <memory>
 #include <map>
 
+
 enum class PlayerMovementState
 {
 	JUMPING,
@@ -53,6 +54,10 @@ protected:
 
 	SDL_Rect mBoundingBox;
     SDL_Rect mOldBoundingBox;
+	SDL_Rect mRespawnBox;
+
+	int mSavepointIntervall;  // bigger -> longer intervall ( relative to delta )
+    int lastTick;
     int mJumpElapsedTime;
     bool mStandingOnFloor;
 
