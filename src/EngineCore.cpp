@@ -56,7 +56,7 @@ EngineCore::EngineCore() :
     mEventhandler = new EventhandlerMaster();
     ASSERT(mEventhandler);
 
-    HandlerText texthandler("myeventhandler", NULL, "drawevent");
+    HandlerText* texthandler = new HandlerText("myeventhandler", NULL, "drawevent");
     mEventhandler->registerEventhandler("Object Layer 1", "event", texthandler);
 }
 
@@ -171,8 +171,15 @@ void EngineCore::render() {
 	SDL_RenderPresent(mRenderer);
 
     //TODO: y fix
-    mEventhandler->triggerHandlers(mEventgen->checkForEvents(mPlayer->getBoundingBox().x, 
-                mViewport.h - (mMap->getTileMap().height * mMap->getTileMap().tileheight)));
+    mEventhandler->triggerHandlers(mEventgen->checkForEvents(mPlayer->getBoundingBox().x,
+                                    mPlayer->getBoundingBox().y));
+
+    for(uint i = 0; i < mEventhandler->getSurfaces().size(); i++)
+    {
+        SDL_Texture *tex = SDL_CreateTextureFromSurface(mRenderer, mEventhandler->getSurfaces().at(i));
+        SDL_RenderCopy(mRenderer, tex, NULL, NULL);
+        SDL_RenderPresent(mRenderer);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------/
  * File:          eventgen.h
  * Created:       2013-09-21
- * Last modified: 2013-09-22 04:05:04 PM CEST
+ * Last modified: 2013-09-23 11:27:38 AM CEST
  * Author:        David Robin 'starbuck' Cvetko
  *-----------------------------------------------------------------------*/
 
@@ -48,6 +48,9 @@ using std::vector;
 
 typedef struct Event Event;
 typedef struct EventName EventName;
+typedef struct EventAssociation EventAssociation;
+
+class Eventhandler;
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -61,6 +64,12 @@ struct EventName
 {
     string groupname;
     string objectname;
+};
+
+struct EventAssociation
+{
+    EventName event;
+    Eventhandler *eventhandler;
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -86,7 +95,6 @@ class Eventgen
 
 ///////////////////////////////////////////////////////////////////////////
 
-//TODO: add params for drawing to map (SDL_SMTH) etc
 class Eventhandler
 {
     public:
@@ -95,10 +103,7 @@ class Eventhandler
 
         //! execute the given event
         //  \param event info (x, y drawable etc)
-        //  NOTE: this is const because the map key is const and  i cant be
-        //  bothered to rewrite the handlermaster code or think of a better
-        //  solution... it should still work though
-        virtual ErrorCode executeEvent (const Event &event) const;
+        virtual SDL_Surface* executeEvent (const Event &event);
 
         inline const string& getName() const
         {
@@ -124,7 +129,7 @@ class HandlerText : public Eventhandler
                              const string &text_to_draw);
         ~HandlerText();
 
-        ErrorCode executeEvent(const Event &event) const;
+        SDL_Surface* executeEvent(const Event &event);
 
     private:
         string m_text_to_draw;
@@ -138,42 +143,54 @@ class EventhandlerMaster
         explicit EventhandlerMaster();
         ~EventhandlerMaster();
 
+        //todo: take ownership, delete in destructor
         inline void registerEventhandler(const string &groupname, const string &objectname,
-                                         const Eventhandler &eventhandler)
+                                         Eventhandler *eventhandler)
         {
-            LogDebug("Registering event handler: " << eventhandler.getName());
+            LogDebug("Registering event handler: " << eventhandler->getName());
             EventName eventname;
             eventname.groupname = groupname;
             eventname.objectname = objectname;
 
-            std::pair<Eventhandler, EventName> event;
-            event.first = eventhandler;
-            event.second = eventname;
-            m_eventhandlers.insert(event);
+            EventAssociation eventassociation;
+            eventassociation.event = eventname;
+            eventassociation.eventhandler = eventhandler;
+
+            m_eventhandlers.push_back(eventassociation);
         };
 
         inline void triggerHandlers(const vector<Event> events)
         {
+            m_to_draw.clear();
             for(vector<Event>::const_iterator passed_it = events.cbegin();
                 passed_it != events.cend(); passed_it++)
             {
-                for(map<Eventhandler, EventName>::iterator it = m_eventhandlers.begin();
+                for(vector<EventAssociation>::iterator it = m_eventhandlers.begin();
                     it != m_eventhandlers.end(); it++)
                 {
-                    if(it->second.groupname == passed_it->group->name &&
-                       it->second.objectname == passed_it->object->name)
+                    if(it->event.groupname == passed_it->group->name &&
+                       it->event.objectname == passed_it->object->name)
                     {
-                        LogDebug("Triggering eventhandler: " << it->first.getName());
-                        //TODO: not calling inherited function
-                        it->first.executeEvent(*passed_it);
+                        LogDebug("Triggering eventhandler: " << it->eventhandler->getName());
+                        SDL_Surface* to_draw = it->eventhandler->executeEvent(*passed_it);
+                        if(to_draw != NULL)
+                        {
+                            m_to_draw.push_back(to_draw);
+                        }
                     }
                 }
             };
         };
 
+        inline vector<SDL_Surface*> getSurfaces()
+        {
+            return m_to_draw;
+        };
+
     private:
         //TODO: make use of wildcards in the future (eventname vector)
-        map<Eventhandler, EventName> m_eventhandlers;
+        vector<EventAssociation> m_eventhandlers;
+        vector<SDL_Surface*> m_to_draw;
 };
 
 ///////////////////////////////////////////////////////////////////////////

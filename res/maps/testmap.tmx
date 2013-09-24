@@ -71,8 +71,11 @@
 </data>
  </layer>
  <objectgroup draworder="topdown" name="Object Layer 1" width="32" height="5">
+     <properties>
+         <property name="single" value="true"/>
+     </properties>
   <object name="goal" x="992" y="1" width="31" height="31"/>
   <object name="start" x="1" y="17" width="41" height="40"/>
-  <object name="event" x="523" y="5" width="49" height="53"/>
+  <object name="event" x="523" y="5" width="152" height="36"/>
  </objectgroup>
 </map>
